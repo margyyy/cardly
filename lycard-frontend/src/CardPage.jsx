@@ -17,6 +17,73 @@ function parseQueryData(search) {
   return null;
 }
 
+// ── Shared: lyrics lines renderer ────────────────────────────────
+function LyricLines({ lines, fontSize, textColor, lineBar, lineBarOpacity }) {
+  return lines.map((line, i) => (
+    <p
+      key={i}
+      className="text-left leading-snug"
+      style={{
+        fontFamily: "'Archivo Black', sans-serif",
+        fontSize: `${fontSize}px`,
+        color: textColor === "white" ? "#ffffff" : "#000000",
+      }}
+    >
+      {lineBar !== "none" ? (
+        <span
+          style={{
+            backgroundColor:
+              lineBar === "white"
+                ? `rgba(255,255,255,${lineBarOpacity})`
+                : `rgba(0,0,0,${lineBarOpacity})`,
+            padding: "2px 6px",
+            boxDecorationBreak: "clone",
+            WebkitBoxDecorationBreak: "clone",
+            display: "inline",
+          }}
+        >
+          {line}
+        </span>
+      ) : (
+        line
+      )}
+    </p>
+  ));
+}
+
+// ── Shared: background layers ─────────────────────────────────────
+function CardBackground({ activeBg, bgUrl, transform, isResizing }) {
+  return (
+    <>
+      {activeBg && bgUrl ? (
+        <>
+          <div
+            className="absolute inset-0 pointer-events-none select-none"
+            style={{
+              backgroundImage: `url(${bgUrl})`,
+              backgroundRepeat: "no-repeat",
+              backgroundPosition: `calc(50% + ${transform.x}px) calc(50% + ${transform.y}px)`,
+              backgroundSize: `${transform.scale * 100}%`,
+              filter: transform.blur > 0 ? `blur(${transform.blur}px)` : undefined,
+            }}
+          />
+          <div className="absolute inset-0 bg-black/40 pointer-events-none" />
+        </>
+      ) : (
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(135deg, #1a1025 0%, #0d0d1a 60%, #1a0d2e 100%)",
+          }}
+        />
+      )}
+      {isResizing && (
+        <div className="absolute inset-0 border-2 border-dashed border-white/30 pointer-events-none z-10" />
+      )}
+    </>
+  );
+}
+
 export default function CardPage() {
   const { t } = useLang();
   const { state, search } = useLocation();
@@ -35,6 +102,7 @@ export default function CardPage() {
   const [isResizing, setIsResizing] = useState(false);
   const [transform, setTransform] = useState({ x: 0, y: 0, scale: 1, blur: 0 });
   const [confirmedTransform, setConfirmedTransform] = useState(null);
+  const [cardStyle, setCardStyle] = useState("portrait"); // "portrait" | "square"
   const prevTransform = useRef(null);
 
   const dragging = useRef(false);
@@ -77,8 +145,8 @@ export default function CardPage() {
 
   const onPointerMove = useCallback((e) => {
     if (!dragging.current) return;
-    setTransform((t) => ({
-      ...t,
+    setTransform((tr) => ({
+      ...tr,
       x: dragStart.current.tx + (e.clientX - dragStart.current.x),
       y: dragStart.current.ty + (e.clientY - dragStart.current.y),
     }));
@@ -152,6 +220,8 @@ export default function CardPage() {
     }
   }
 
+  const isPortrait = cardStyle === "portrait";
+
   return (
     <div className="w-full max-w-4xl px-6 py-10 flex flex-col gap-6">
       <Button
@@ -163,119 +233,84 @@ export default function CardPage() {
         {t.back}
       </Button>
 
-      <div className="flex flex-col items-center gap-4">
+      <div className="flex flex-col items-center gap-8">
         {/* ── Card ── */}
         <div
           ref={cardRef}
-          className={`w-full max-w-[320px] aspect-[9/16] shadow-xl relative overflow-hidden ${isResizing ? "cursor-grab active:cursor-grabbing" : ""}`}
+          className={`shadow-xl relative overflow-hidden ${
+            isPortrait
+              ? "w-full max-w-[300px] aspect-[9/16]"
+              : "w-full max-w-[340px] aspect-square"
+          } ${isResizing ? "cursor-grab active:cursor-grabbing" : ""}`}
           onPointerDown={onPointerDown}
           onPointerMove={onPointerMove}
           onPointerUp={onPointerUp}
         >
-          {/* background */}
-          {activeBg && bgUrl ? (
-            <>
-              <div
-                className="absolute inset-0 pointer-events-none select-none"
-                style={{
-                  backgroundImage: `url(${bgUrl})`,
-                  backgroundRepeat: "no-repeat",
-                  backgroundPosition: `calc(50% + ${transform.x}px) calc(50% + ${transform.y}px)`,
-                  backgroundSize: `${transform.scale * 100}%`,
-                  filter:
-                    transform.blur > 0
-                      ? `blur(${transform.blur}px)`
-                      : undefined,
-                }}
-              />
-              <div className="absolute inset-0 bg-black/40 pointer-events-none" />
-            </>
-          ) : (
-            <div
-              className="absolute inset-0"
-              style={{
-                background:
-                  "linear-gradient(135deg, #1a1025 0%, #0d0d1a 60%, #1a0d2e 100%)",
-              }}
-            />
-          )}
+          <CardBackground
+            activeBg={activeBg}
+            bgUrl={bgUrl}
+            transform={transform}
+            isResizing={isResizing}
+          />
 
-          {/* resize hint overlay */}
-          {isResizing && (
-            <div className="absolute inset-0 border-2 border-dashed border-white/30 pointer-events-none z-10" />
-          )}
-
-          {/* quote mark */}
+          {/* quote mark top-left */}
           <span
-            className="absolute top-6 left-8 text-white/30 select-none pointer-events-none"
+            className="absolute top-5 left-6 text-white/30 select-none pointer-events-none"
             style={{
               fontFamily: "'Archivo Black', sans-serif",
-              fontSize: "96px",
+              fontSize: isPortrait ? "80px" : "64px",
               lineHeight: 1,
             }}
           >
             "
           </span>
 
-          {/* lyrics */}
-          <div className="absolute inset-0 flex flex-col items-start justify-center px-10 gap-1.5 pointer-events-none">
-            {lines.map((line, i) => (
-              <p
-                key={i}
-                className="text-left leading-snug"
-                style={{
-                  fontFamily: "'Archivo Black', sans-serif",
-                  fontSize: `${fontSize}px`,
-                  color: textColor === "white" ? "#ffffff" : "#000000",
-                }}
-              >
-                {lineBar !== "none" ? (
-                  <span
-                    style={{
-                      backgroundColor:
-                        lineBar === "white"
-                          ? `rgba(255,255,255,${lineBarOpacity})`
-                          : `rgba(0,0,0,${lineBarOpacity})`,
-                      padding: "2px 6px",
-                      boxDecorationBreak: "clone",
-                      WebkitBoxDecorationBreak: "clone",
-                      display: "inline",
-                    }}
-                  >
-                    {line}
-                  </span>
-                ) : (
-                  line
-                )}
-              </p>
-            ))}
+          {/* lyrics — centered in safe zone (below quote, above bottom bar) */}
+          <div
+            className="absolute left-0 right-0 flex flex-col items-start justify-center pointer-events-none gap-1.5 overflow-hidden"
+            style={{
+              top: isPortrait ? "64px" : "54px",
+              bottom: isPortrait ? "50px" : "46px",
+              padding: isPortrait ? "0 2.5rem" : "0 2rem",
+            }}
+          >
+            <LyricLines
+              lines={lines}
+              fontSize={fontSize}
+              textColor={textColor}
+              lineBar={lineBar}
+              lineBarOpacity={lineBarOpacity}
+            />
           </div>
 
           {/* bottom bar */}
           <div
-            className="absolute bottom-0 left-0 right-0 px-8 py-4 flex items-end justify-between pointer-events-none"
+            className="absolute bottom-0 left-0 right-0 px-6 py-4 pointer-events-none"
             style={{
-              background:
-                "linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%)",
+              background: "linear-gradient(to top, rgba(0,0,0,0.72) 0%, transparent 100%)",
             }}
           >
-            <div>
+            <p
+              className="text-white leading-tight"
+              style={{
+                fontFamily: "'Archivo Black', sans-serif",
+                fontSize: isPortrait ? "13px" : "12px",
+              }}
+            >
+              {song.trackName}
+            </p>
+            <p
+              className="text-white/60 mt-0.5"
+              style={{
+                fontFamily: "'Archivo Black', sans-serif",
+                fontSize: isPortrait ? "11px" : "10px",
+              }}
+            >
+              {song.artistName}
+            </p>
+            {isPortrait && song.albumName && (
               <p
-                className="text-white text-sm leading-tight"
-                style={{ fontFamily: "'Archivo Black', sans-serif" }}
-              >
-                {song.trackName}
-              </p>
-              <p
-                className="text-white/60 text-xs mt-0.5"
-                style={{ fontFamily: "'Archivo Black', sans-serif" }}
-              >
-                {song.artistName}
-              </p>
-            </div>
-            {song.albumName && (
-              <p
-                className="text-white/40 text-xs"
+                className="text-white/40 text-xs absolute bottom-4 right-6"
                 style={{ fontFamily: "'Archivo Black', sans-serif" }}
               >
                 {song.albumName}
@@ -284,9 +319,9 @@ export default function CardPage() {
           </div>
         </div>
 
-        {/* ── Resize controls (shown while resizing) ── */}
+        {/* ── Resize controls ── */}
         {isResizing && (
-          <div className="w-full max-w-[320px] flex flex-col gap-3">
+          <div className="w-full max-w-[340px] flex flex-col gap-3">
             <div className="flex flex-col gap-1">
               <label className="font-head text-xs uppercase tracking-widest">
                 {t.zoom} — {Math.round(transform.scale * 100)}%
@@ -297,7 +332,7 @@ export default function CardPage() {
                 step={0.01}
                 value={[transform.scale]}
                 onValueChange={([v]) =>
-                  setTransform((t) => ({ ...t, scale: v }))
+                  setTransform((tr) => ({ ...tr, scale: v }))
                 }
               />
             </div>
@@ -311,7 +346,7 @@ export default function CardPage() {
                 step={0.1}
                 value={[transform.blur]}
                 onValueChange={([v]) =>
-                  setTransform((t) => ({ ...t, blur: v }))
+                  setTransform((tr) => ({ ...tr, blur: v }))
                 }
               />
             </div>
@@ -328,7 +363,38 @@ export default function CardPage() {
 
         {/* ── Panels ── */}
         {!isResizing && (
-          <div className="w-full max-w-[320px] flex flex-col gap-2">
+          <div className="w-full max-w-[340px] flex flex-col gap-2">
+
+            {/* Change Style */}
+            <div className="border-2 border-black bg-white">
+              <button
+                className="w-full flex items-center justify-between px-4 py-2.5 font-head text-sm uppercase tracking-widest hover:bg-black/5 transition-colors"
+                onClick={() =>
+                  setOpenPanel((p) => (p === "style" ? null : "style"))
+                }
+              >
+                {t.changeStyle}
+                <span>{openPanel === "style" ? "▲" : "▼"}</span>
+              </button>
+              {openPanel === "style" && (
+                <div className="flex gap-2 px-4 pb-4 pt-1">
+                  {["portrait", "square"].map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => setCardStyle(s)}
+                      className={`flex-1 py-1.5 border-2 border-black font-head text-xs uppercase tracking-widest transition-all ${
+                        cardStyle === s
+                          ? "bg-black text-white shadow-none translate-y-0.5"
+                          : "bg-white text-black shadow-sm hover:shadow-none hover:translate-y-0.5"
+                      }`}
+                    >
+                      {s === "portrait" ? t.stylePortrait : t.styleSquare}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
             {/* Edit Background */}
             <div className="border-2 border-black bg-white">
               <button
@@ -400,7 +466,11 @@ export default function CardPage() {
                         <button
                           key={c}
                           onClick={() => setTextColor(c)}
-                          className={`flex-1 py-1.5 border-2 border-black font-head text-xs uppercase tracking-widest transition-all ${textColor === c ? "bg-black text-white shadow-none translate-y-0.5" : "bg-white text-black shadow-sm hover:shadow-none hover:translate-y-0.5"}`}
+                          className={`flex-1 py-1.5 border-2 border-black font-head text-xs uppercase tracking-widest transition-all ${
+                            textColor === c
+                              ? "bg-black text-white shadow-none translate-y-0.5"
+                              : "bg-white text-black shadow-sm hover:shadow-none hover:translate-y-0.5"
+                          }`}
                         >
                           {c === "white" ? t.colorWhite : t.colorBlack}
                         </button>
@@ -416,9 +486,17 @@ export default function CardPage() {
                         <button
                           key={b}
                           onClick={() => setLineBar(b)}
-                          className={`flex-1 py-1.5 border-2 border-black font-head text-xs uppercase tracking-widest transition-all ${lineBar === b ? "bg-black text-white shadow-none translate-y-0.5" : "bg-white text-black shadow-sm hover:shadow-none hover:translate-y-0.5"}`}
+                          className={`flex-1 py-1.5 border-2 border-black font-head text-xs uppercase tracking-widest transition-all ${
+                            lineBar === b
+                              ? "bg-black text-white shadow-none translate-y-0.5"
+                              : "bg-white text-black shadow-sm hover:shadow-none hover:translate-y-0.5"
+                          }`}
                         >
-                          {b === "none" ? t.lineBarNone : b === "white" ? t.colorWhite : t.colorBlack}
+                          {b === "none"
+                            ? t.lineBarNone
+                            : b === "white"
+                            ? t.colorWhite
+                            : t.colorBlack}
                         </button>
                       ))}
                     </div>

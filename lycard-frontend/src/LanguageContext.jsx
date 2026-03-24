@@ -35,6 +35,9 @@ const translations = {
     downloadPng: "Download PNG",
     zoom: "Zoom",
     blur: "Blur",
+    changeStyle: "Change Style",
+    stylePortrait: "9:16",
+    styleSquare: "Square",
   },
   it: {
     search: "Cerca",
@@ -71,6 +74,9 @@ const translations = {
     downloadPng: "Scarica PNG",
     zoom: "Zoom",
     blur: "Sfocatura",
+    changeStyle: "Cambia stile",
+    stylePortrait: "9:16",
+    styleSquare: "Quadrato",
   },
 };
 
