@@ -30,10 +30,14 @@ export default function CardPage() {
   function handleUpload(e) {
     const file = e.target.files?.[0];
     if (!file) return;
-    setBgUrl(URL.createObjectURL(file));
-    setTransform(confirmedTransform ?? { x: 0, y: 0, scale: 1, blur: 0 });
-    prevTransform.current = confirmedTransform;
-    setIsResizing(true);
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      setBgUrl(ev.target.result);
+      setTransform(confirmedTransform ?? { x: 0, y: 0, scale: 1, blur: 0 });
+      prevTransform.current = confirmedTransform;
+      setIsResizing(true);
+    };
+    reader.readAsDataURL(file);
   }
 
   const onPointerDown = useCallback((e) => {
@@ -128,7 +132,7 @@ export default function CardPage() {
 
           {/* quote mark */}
           <span className="absolute top-6 left-8 text-white/30 select-none pointer-events-none"
-                style={{ fontFamily: "'Archivo Black', sans-serif", fontSize: "clamp(60px, 10vw, 120px)", lineHeight: 1 }}>
+                style={{ fontFamily: "'Archivo Black', sans-serif", fontSize: "96px", lineHeight: 1 }}>
             "
           </span>
 
