@@ -137,15 +137,15 @@ async function scrapeLyrics(
     path = data.response.song.path as string;
   }
 
-  // 2. Fetch the Genius page via WebScraping.ai
-  const apiKey = process.env.WEBSCRAPING_AI_KEY;
+  // 2. Fetch the Genius page via ScraperAPI
+  const apiKey = process.env.SCRAPERAPI_KEY;
   if (!apiKey) {
-    console.error("WEBSCRAPING_AI_KEY is missing");
-    return "DEBUG_ERROR: WEBSCRAPING_AI_KEY is missing in environment variables.";
+    console.error("SCRAPERAPI_KEY is missing");
+    return "DEBUG_ERROR: SCRAPERAPI_KEY is missing in environment variables.";
   }
 
   try {
-    const page = await axios.get("https://api.webscraping.ai/html", {
+    const page = await axios.get("https://api.scraperapi.com/", {
       params: {
         api_key: apiKey,
         url: `https://genius.com${path}`,
