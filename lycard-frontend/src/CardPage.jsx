@@ -94,7 +94,7 @@ export default function CardPage() {
     const W = 320 * S;
     const H = Math.round((320 * 16) / 9) * S;
 
-    await document.fonts.ready;
+    await document.fonts.load(`bold ${fontSize * S}px "Archivo Black"`);
 
     const canvas = document.createElement("canvas");
     canvas.width = W;
