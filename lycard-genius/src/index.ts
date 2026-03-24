@@ -42,9 +42,8 @@ async function getLyrics(params: SongDTO): Promise<SongResponseDTO[]> {
   return response.data;
 }
 
-new Elysia()
-  .use(cors()) // Enable CORS middleware
-  .get("/lyrics", ({ query }) => getLyrics(query))
-  .listen(3000);
+const app = new Elysia()
+  .use(cors())
+  .get("/lyrics", ({ query }) => getLyrics(query));
 
-console.log("ciao");
+export default app;
