@@ -1,5 +1,31 @@
 import { useRef, useState, useCallback } from "react";
-import html2canvas from "html2canvas";
+import { toPng } from "html-to-image";
+
+let cachedFontCSS = null;
+async function getArchivoBlackCSS() {
+  if (cachedFontCSS) return cachedFontCSS;
+  const css = await fetch(
+    "https://fonts.googleapis.com/css2?family=Archivo+Black&display=block",
+    { headers: { "User-Agent": navigator.userAgent } },
+  ).then((r) => r.text());
+  const urls = [...css.matchAll(/url\((https?:\/\/[^)]+)\)/g)].map(
+    (m) => m[1],
+  );
+  const embedded = await Promise.all(
+    urls.map(async (url) => {
+      const buf = await fetch(url).then((r) => r.arrayBuffer());
+      const bytes = new Uint8Array(buf);
+      let bin = "";
+      for (let i = 0; i < bytes.byteLength; i++) bin += String.fromCharCode(bytes[i]);
+      return { url, b64: `data:font/woff2;base64,${btoa(bin)}` };
+    }),
+  );
+  cachedFontCSS = embedded.reduce(
+    (s, { url, b64 }) => s.replace(url, b64),
+    css,
+  );
+  return cachedFontCSS;
+}
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/retroui/Button";
 import { Slider } from "@/components/retroui/Slider";
@@ -91,20 +117,17 @@ export default function CardPage() {
   const activeBg = isResizing || confirmedTransform;
 
   async function handleDownload() {
-    try {
-      const canvas = await html2canvas(cardRef.current, {
-        scale: 3,
-        useCORS: true,
-        allowTaint: true,
-      });
-      const link = document.createElement("a");
-      link.download = `${song.trackName} — ${song.artistName}.png`;
-      link.href = canvas.toDataURL("image/png");
-      link.click();
-    } catch (err) {
-      console.error("html2canvas error:", err);
-      alert("Errore durante il download: " + err.message);
-    }
+    await document.fonts.ready;
+    const fontEmbedCSS = await getArchivoBlackCSS();
+    const dataUrl = await toPng(cardRef.current, {
+      pixelRatio: 3,
+      skipFonts: true,
+      fontEmbedCSS,
+    });
+    const link = document.createElement("a");
+    link.download = `${song.trackName} — ${song.artistName}.png`;
+    link.href = dataUrl;
+    link.click();
   }
 
   return (
@@ -130,21 +153,14 @@ export default function CardPage() {
           {/* background */}
           {activeBg && bgUrl ? (
             <>
-              <img
-                src={bgUrl}
-                alt=""
-                draggable={false}
-                className="absolute max-w-none pointer-events-none select-none"
+              <div
+                className="absolute inset-0 pointer-events-none select-none"
                 style={{
-                  transform: `translate(calc(-50% + ${transform.x}px), calc(-50% + ${transform.y}px)) scale(${transform.scale})`,
-                  top: "50%",
-                  left: "50%",
-                  width: "100%",
-                  transformOrigin: "center",
-                  filter:
-                    transform.blur > 0
-                      ? `blur(${transform.blur}px)`
-                      : undefined,
+                  backgroundImage: `url(${bgUrl})`,
+                  backgroundRepeat: "no-repeat",
+                  backgroundPosition: `calc(50% + ${transform.x}px) calc(50% + ${transform.y}px)`,
+                  backgroundSize: `${transform.scale * 100}%`,
+                  filter: transform.blur > 0 ? `blur(${transform.blur}px)` : undefined,
                 }}
               />
               <div className="absolute inset-0 bg-black/40 pointer-events-none" />
