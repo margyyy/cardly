@@ -9,7 +9,7 @@ import { Loader } from "@/components/retroui/Loader";
 import SongPage from "./SongPage.jsx";
 import CardPage from "./CardPage.jsx";
 
-const API_URL = "http://localhost:3000/lyrics";
+const API_URL = "https://cardly-ugit.vercel.app/lyrics";
 
 async function fetchSongs({ artistName, trackName, albumName }) {
   const params = new URLSearchParams();
@@ -66,7 +66,9 @@ function SearchForm({ onSearch, loading }) {
       <Card.Content>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="artistName" className="font-head text-sm">Artist</Label>
+            <Label htmlFor="artistName" className="font-head text-sm">
+              Artist
+            </Label>
             <Input
               id="artistName"
               value={artistName}
@@ -75,7 +77,9 @@ function SearchForm({ onSearch, loading }) {
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="trackName" className="font-head text-sm">Song</Label>
+            <Label htmlFor="trackName" className="font-head text-sm">
+              Song
+            </Label>
             <Input
               id="trackName"
               value={trackName}
@@ -84,7 +88,9 @@ function SearchForm({ onSearch, loading }) {
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="albumName" className="font-head text-sm">Album</Label>
+            <Label htmlFor="albumName" className="font-head text-sm">
+              Album
+            </Label>
             <Input
               id="albumName"
               value={albumName}
@@ -120,9 +126,14 @@ function AlbumPicker({ albums, onPick }) {
             <Card.Header>
               <Card.Title>{album}</Card.Title>
               {albums[album][0]?.artistName && (
-                <Card.Description>{albums[album][0].artistName}</Card.Description>
+                <Card.Description>
+                  {albums[album][0].artistName}
+                </Card.Description>
               )}
-              <Card.Description>{albums[album].length} track{albums[album].length !== 1 ? "s" : ""}</Card.Description>
+              <Card.Description>
+                {albums[album].length} track
+                {albums[album].length !== 1 ? "s" : ""}
+              </Card.Description>
             </Card.Header>
           </Card>
         ))}
@@ -153,7 +164,9 @@ function SongPicker({ songs, onPick }) {
                 <Card.Description>{song.albumName}</Card.Description>
               )}
               {song.duration && (
-                <Card.Description>{formatDuration(song.duration)}</Card.Description>
+                <Card.Description>
+                  {formatDuration(song.duration)}
+                </Card.Description>
               )}
             </Card.Header>
           </Card>
@@ -223,7 +236,12 @@ function HomePage() {
           {selectedAlbum && (
             <>
               {Object.keys(albums).length > 1 && (
-                <Button variant="default" size="sm" onClick={handleBack} className="self-start">
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={handleBack}
+                  className="self-start"
+                >
                   ← Back to albums
                 </Button>
               )}
