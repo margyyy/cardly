@@ -4,10 +4,12 @@ import "./SongPage.css";
 import { Button } from "@/components/retroui/Button";
 import { Card } from "@/components/retroui/Card";
 import { Loader } from "@/components/retroui/Loader";
+import { useLang } from "./LanguageContext.jsx";
 
 const API_URL = "https://cardly-ugit.vercel.app";
 
 export default function SongPage() {
+  const { t } = useLang();
   const { state } = useLocation();
   const { id } = useParams();
   const navigate = useNavigate();
@@ -18,13 +20,12 @@ export default function SongPage() {
 
   const [lyrics, setLyrics] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [errorKey, setErrorKey] = useState(null); // translation key
   const [selectedLines, setSelectedLines] = useState(new Set());
 
   useEffect(() => {
     if (!songId) return;
 
-    // Fetch song details if not provided via state
     if (!song) {
       fetch(`${API_URL}/songs/${songId}`)
         .then((res) => res.json())
@@ -35,11 +36,11 @@ export default function SongPage() {
             albumName: data.albumName,
           });
         })
-        .catch(() => setError("Could not load song details."));
+        .catch(() => setErrorKey("errorSongDetails"));
     }
 
     setLoading(true);
-    setError(null);
+    setErrorKey(null);
     const lyricsUrl = `${API_URL}/songs/${songId}/lyrics${songPath ? `?path=${encodeURIComponent(songPath)}` : ""}`;
     fetch(lyricsUrl)
       .then((res) => {
@@ -47,16 +48,16 @@ export default function SongPage() {
         return res.text();
       })
       .then((text) => setLyrics(text))
-      .catch(() => setError("Could not load lyrics."))
+      .catch(() => setErrorKey("errorLyrics"))
       .finally(() => setLoading(false));
   }, [songId, song]);
 
-  if (!song && !loading && error) {
+  if (!song && !loading && errorKey) {
     return (
       <div className="song-page error-container">
-        <h2>Error</h2>
-        <p>{error}</p>
-        <Button onClick={() => navigate("/")}>Go Home</Button>
+        <h2>{t.error}</h2>
+        <p>{t[errorKey]}</p>
+        <Button onClick={() => navigate("/")}>{t.goHome}</Button>
       </div>
     );
   }
@@ -88,7 +89,7 @@ export default function SongPage() {
         className="self-start"
         onClick={() => navigate(-1)}
       >
-        ← Back
+        {t.back}
       </Button>
 
       <Card className="bg-white rounded-none">
@@ -109,13 +110,13 @@ export default function SongPage() {
         </div>
       )}
 
-      {error && (
+      {errorKey && (
         <p className="border-2 border-[--destructive] bg-white px-4 py-3 text-[--destructive] font-head text-sm shadow-md">
-          {error}
+          {t[errorKey]}
         </p>
       )}
 
-      {!loading && !error && lines.length > 0 && (
+      {!loading && !errorKey && lines.length > 0 && (
         <div className="flex flex-col gap-0.5">
           {lines.map((line, i) =>
             line.trim() === "" ? (
@@ -141,17 +142,16 @@ export default function SongPage() {
         </div>
       )}
 
-      {!loading && !error && lines.length === 0 && lyrics !== null && (
+      {!loading && !errorKey && lines.length === 0 && lyrics !== null && (
         <p className="text-[--muted-foreground] font-head text-sm">
-          No lyrics found for this song.
+          {t.noLyrics}
         </p>
       )}
 
       {selectedLines.size > 0 && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3">
           <div className="bg-primary border-2 border-black shadow-md px-4 py-2.5 font-head text-sm whitespace-nowrap pointer-events-none">
-            {selectedLines.size} line{selectedLines.size !== 1 ? "s" : ""}{" "}
-            selected
+            {t.lineSelected(selectedLines.size)}
           </div>
           <Button
             variant="secondary"
@@ -171,7 +171,7 @@ export default function SongPage() {
               }
             }}
           >
-            Generate →
+            {t.generate}
           </Button>
         </div>
       )}

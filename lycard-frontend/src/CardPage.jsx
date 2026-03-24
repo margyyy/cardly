@@ -4,6 +4,7 @@ import { domToPng } from "modern-screenshot";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/retroui/Button";
 import { Slider } from "@/components/retroui/Slider";
+import { useLang } from "./LanguageContext.jsx";
 
 function parseQueryData(search) {
   try {
@@ -17,6 +18,7 @@ function parseQueryData(search) {
 }
 
 export default function CardPage() {
+  const { t } = useLang();
   const { state, search } = useLocation();
   const navigate = useNavigate();
 
@@ -158,7 +160,7 @@ export default function CardPage() {
         className="self-start"
         onClick={() => navigate(-1)}
       >
-        ← Back
+        {t.back}
       </Button>
 
       <div className="flex flex-col items-center gap-4">
@@ -287,7 +289,7 @@ export default function CardPage() {
           <div className="w-full max-w-[320px] flex flex-col gap-3">
             <div className="flex flex-col gap-1">
               <label className="font-head text-xs uppercase tracking-widest">
-                Zoom — {Math.round(transform.scale * 100)}%
+                {t.zoom} — {Math.round(transform.scale * 100)}%
               </label>
               <Slider
                 min={0.5}
@@ -301,7 +303,7 @@ export default function CardPage() {
             </div>
             <div className="flex flex-col gap-1">
               <label className="font-head text-xs uppercase tracking-widest">
-                Blur — {transform.blur}px
+                {t.blur} — {transform.blur}px
               </label>
               <Slider
                 min={0}
@@ -315,10 +317,10 @@ export default function CardPage() {
             </div>
             <div className="flex gap-2">
               <Button variant="default" size="sm" onClick={confirmResize}>
-                Apply
+                {t.apply}
               </Button>
               <Button variant="outline" size="sm" onClick={cancelResize}>
-                Cancel
+                {t.cancel}
               </Button>
             </div>
           </div>
@@ -333,13 +335,13 @@ export default function CardPage() {
                 className="w-full flex items-center justify-between px-4 py-2.5 font-head text-sm uppercase tracking-widest hover:bg-black/5 transition-colors"
                 onClick={() => setOpenPanel((p) => (p === "bg" ? null : "bg"))}
               >
-                Edit Background
+                {t.editBackground}
                 <span>{openPanel === "bg" ? "▲" : "▼"}</span>
               </button>
               {openPanel === "bg" && (
                 <div className="flex flex-col gap-2 px-4 pb-4 pt-1">
                   <label className="w-full flex items-center justify-center gap-2 border-2 border-black border-dashed px-4 py-2.5 cursor-pointer font-head text-sm shadow-sm hover:shadow-none hover:translate-y-0.5 transition-all bg-white">
-                    {bgUrl ? "Change background" : "Upload background"}
+                    {bgUrl ? t.changeBackground : t.uploadBackground}
                     <input
                       type="file"
                       accept="image/*"
@@ -357,7 +359,7 @@ export default function CardPage() {
                         setIsResizing(true);
                       }}
                     >
-                      Edit
+                      {t.edit}
                     </Button>
                   )}
                 </div>
@@ -372,14 +374,14 @@ export default function CardPage() {
                   setOpenPanel((p) => (p === "text" ? null : "text"))
                 }
               >
-                Edit Text
+                {t.editText}
                 <span>{openPanel === "text" ? "▲" : "▼"}</span>
               </button>
               {openPanel === "text" && (
                 <div className="flex flex-col gap-3 px-4 pb-4 pt-1">
                   <div className="flex flex-col gap-1">
                     <label className="font-head text-xs uppercase tracking-widest">
-                      Font size — {fontSize}px
+                      {t.fontSize} — {fontSize}px
                     </label>
                     <Slider
                       min={8}
@@ -391,7 +393,7 @@ export default function CardPage() {
                   </div>
                   <div className="flex flex-col gap-1.5">
                     <span className="font-head text-xs uppercase tracking-widest">
-                      Text color
+                      {t.textColor}
                     </span>
                     <div className="flex gap-2">
                       {["white", "black"].map((c) => (
@@ -400,14 +402,14 @@ export default function CardPage() {
                           onClick={() => setTextColor(c)}
                           className={`flex-1 py-1.5 border-2 border-black font-head text-xs uppercase tracking-widest transition-all ${textColor === c ? "bg-black text-white shadow-none translate-y-0.5" : "bg-white text-black shadow-sm hover:shadow-none hover:translate-y-0.5"}`}
                         >
-                          {c}
+                          {c === "white" ? t.colorWhite : t.colorBlack}
                         </button>
                       ))}
                     </div>
                   </div>
                   <div className="flex flex-col gap-1.5">
                     <span className="font-head text-xs uppercase tracking-widest">
-                      Line bar
+                      {t.lineBar}
                     </span>
                     <div className="flex gap-2">
                       {["none", "white", "black"].map((b) => (
@@ -416,7 +418,7 @@ export default function CardPage() {
                           onClick={() => setLineBar(b)}
                           className={`flex-1 py-1.5 border-2 border-black font-head text-xs uppercase tracking-widest transition-all ${lineBar === b ? "bg-black text-white shadow-none translate-y-0.5" : "bg-white text-black shadow-sm hover:shadow-none hover:translate-y-0.5"}`}
                         >
-                          {b}
+                          {b === "none" ? t.lineBarNone : b === "white" ? t.colorWhite : t.colorBlack}
                         </button>
                       ))}
                     </div>
@@ -424,7 +426,7 @@ export default function CardPage() {
                   {lineBar !== "none" && (
                     <div className="flex flex-col gap-1">
                       <label className="font-head text-xs uppercase tracking-widest">
-                        Bar opacity — {Math.round(lineBarOpacity * 100)}%
+                        {t.barOpacity} — {Math.round(lineBarOpacity * 100)}%
                       </label>
                       <Slider
                         min={0}
@@ -445,7 +447,7 @@ export default function CardPage() {
               className="w-full"
               onClick={handleDownload}
             >
-              Download PNG
+              {t.downloadPng}
             </Button>
           </div>
         )}

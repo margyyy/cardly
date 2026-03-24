@@ -7,6 +7,7 @@ import { Input } from "@/components/retroui/Input";
 import { Loader } from "@/components/retroui/Loader";
 import SongPage from "./SongPage.jsx";
 import CardPage from "./CardPage.jsx";
+import { useLang } from "./LanguageContext.jsx";
 
 const API_URL = "https://cardly-ugit.vercel.app";
 
@@ -18,6 +19,7 @@ async function apiGet(path) {
 
 // ── Search Form ──────────────────────────────────────────────────
 function SearchForm({ onSearch, loading }) {
+  const { lang, setLang, t } = useLang();
   const [query, setQuery] = useState("");
   const [type, setType] = useState("song");
 
@@ -37,26 +39,42 @@ function SearchForm({ onSearch, loading }) {
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search..."
+            placeholder={t.searchPlaceholder}
           />
-          <div className="flex gap-2">
-            {["song", "artist"].map((t) => (
+          <div className="flex items-center gap-2">
+            {["song", "artist"].map((tp) => (
               <button
-                key={t}
+                key={tp}
                 type="button"
-                onClick={() => setType(t)}
+                onClick={() => setType(tp)}
                 className={`flex-1 py-1.5 border-2 border-black font-head text-xs uppercase tracking-widest transition-all ${
-                  type === t
+                  type === tp
                     ? "bg-black text-white shadow-none translate-y-0.5"
                     : "bg-white text-black shadow-sm hover:shadow-none hover:translate-y-0.5"
                 }`}
               >
-                {t === "song" ? "Songs" : "Artists"}
+                {tp === "song" ? t.songs : t.artists}
               </button>
             ))}
+            <div className="flex ml-auto">
+              {["en", "it"].map((l) => (
+                <button
+                  key={l}
+                  type="button"
+                  onClick={() => setLang(l)}
+                  className={`px-2.5 py-1.5 border-2 border-black font-head text-xs uppercase tracking-widest transition-all first:border-r-0 ${
+                    lang === l
+                      ? "bg-black text-white shadow-none translate-y-0.5"
+                      : "bg-white text-black shadow-sm hover:shadow-none hover:translate-y-0.5"
+                  }`}
+                >
+                  {l === "en" ? "ENG" : "IT"}
+                </button>
+              ))}
+            </div>
           </div>
           <Button type="submit" disabled={loading} className="self-start">
-            {loading ? <Loader size="sm" variant="default" /> : "Search"}
+            {loading ? <Loader size="sm" variant="default" /> : t.search}
           </Button>
         </form>
       </Card.Content>
@@ -124,6 +142,7 @@ function ArtistResults({ artists, onPick }) {
 
 // ── Artist Page (songs list) ─────────────────────────────────────
 function ArtistSongs({ artist, onBack, onPickSong }) {
+  const { t } = useLang();
   const [songs, setSongs] = useState([]);
   const [nextPage, setNextPage] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -149,7 +168,7 @@ function ArtistSongs({ artist, onBack, onPickSong }) {
     <div className="flex flex-col gap-4">
       <div className="flex items-center gap-3">
         <Button variant="default" size="sm" onClick={onBack}>
-          ← Back
+          {t.back}
         </Button>
         <h2 className="font-head text-lg">{artist.name}</h2>
       </div>
@@ -166,7 +185,7 @@ function ArtistSongs({ artist, onBack, onPickSong }) {
               onClick={() => loadSongs(nextPage)}
               disabled={loading}
             >
-              {loading ? <Loader size="sm" /> : "Load more"}
+              {loading ? <Loader size="sm" /> : t.loadMore}
             </Button>
           )}
         </>
@@ -177,11 +196,12 @@ function ArtistSongs({ artist, onBack, onPickSong }) {
 
 // ── Home Page ────────────────────────────────────────────────────
 function HomePage() {
+  const { t } = useLang();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [results, setResults] = useState(null); // { type, results }
-  const [view, setView] = useState(null); // { type: 'artist', data }
+  const [results, setResults] = useState(null);
+  const [view, setView] = useState(null);
 
   async function handleSearch(q, type) {
     setLoading(true);
@@ -193,15 +213,13 @@ function HomePage() {
         `/search?q=${encodeURIComponent(q)}&type=${type}`,
       );
       if (!data.results || data.results.length === 0) {
-        setError("No results found.");
+        setError(t.noResults);
         return;
       }
       setResults(data);
     } catch (err) {
       console.error(err);
-      setError(
-        "Search failed. Check console for details or make sure the backend is running & Genius token is valid.",
-      );
+      setError(t.searchFailed);
     } finally {
       setLoading(false);
     }
@@ -249,7 +267,6 @@ function HomePage() {
           onPick={(a) => setView({ type: "artist", data: a })}
         />
       )}
-
     </div>
   );
 }
