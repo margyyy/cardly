@@ -5,11 +5,24 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/retroui/Button";
 import { Slider } from "@/components/retroui/Slider";
 
+function parseQueryData(search) {
+  try {
+    const q = new URLSearchParams(search);
+    const d = q.get("d");
+    if (d) {
+      return JSON.parse(decodeURIComponent(escape(atob(d))));
+    }
+  } catch (e) {}
+  return null;
+}
+
 export default function CardPage() {
-  const { state } = useLocation();
+  const { state, search } = useLocation();
   const navigate = useNavigate();
-  const song = state?.song;
-  const lines = state?.lines ?? [];
+
+  const queryData = parseQueryData(search);
+  const song = state?.song || queryData?.song;
+  const lines = state?.lines ?? queryData?.lines ?? [];
 
   const [bgUrl, setBgUrl] = useState(null);
   const [fontSize, setFontSize] = useState(14);
@@ -97,8 +110,11 @@ export default function CardPage() {
       const { width, height } = cardRef.current.getBoundingClientRect();
       const fontRule = Array.from(document.styleSheets)
         .flatMap((sheet) => {
-          try { return Array.from(sheet.cssRules); }
-          catch { return []; }
+          try {
+            return Array.from(sheet.cssRules);
+          } catch {
+            return [];
+          }
         })
         .find((r) => r instanceof CSSFontFaceRule);
       const dataUrl = await domToPng(cardRef.current, {
@@ -164,7 +180,10 @@ export default function CardPage() {
                   backgroundRepeat: "no-repeat",
                   backgroundPosition: `calc(50% + ${transform.x}px) calc(50% + ${transform.y}px)`,
                   backgroundSize: `${transform.scale * 100}%`,
-                  filter: transform.blur > 0 ? `blur(${transform.blur}px)` : undefined,
+                  filter:
+                    transform.blur > 0
+                      ? `blur(${transform.blur}px)`
+                      : undefined,
                 }}
               />
               <div className="absolute inset-0 bg-black/40 pointer-events-none" />
