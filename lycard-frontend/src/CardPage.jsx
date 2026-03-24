@@ -1,5 +1,5 @@
 import { useRef, useState, useCallback } from "react";
-import { toPng } from "html-to-image";
+import html2canvas from "html2canvas";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/retroui/Button";
 import { Slider } from "@/components/retroui/Slider";
@@ -91,10 +91,14 @@ export default function CardPage() {
   const activeBg = isResizing || confirmedTransform;
 
   async function handleDownload() {
-    const dataUrl = await toPng(cardRef.current, { pixelRatio: 3 });
+    const canvas = await html2canvas(cardRef.current, {
+      scale: 3,
+      useCORS: true,
+      allowTaint: true,
+    });
     const link = document.createElement("a");
     link.download = `${song.trackName} — ${song.artistName}.png`;
-    link.href = dataUrl;
+    link.href = canvas.toDataURL("image/png");
     link.click();
   }
 
