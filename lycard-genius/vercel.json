@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "src/index.ts": {
+      "runtime": "bun@1"
+    }
+  }
+}
