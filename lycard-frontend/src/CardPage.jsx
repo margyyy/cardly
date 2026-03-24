@@ -1,6 +1,5 @@
 import { useRef, useState, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { toPng } from "html-to-image";
 import { Button } from "@/components/retroui/Button";
 import { Slider } from "@/components/retroui/Slider";
 
@@ -78,11 +77,91 @@ export default function CardPage() {
   const activeBg = isResizing || confirmedTransform;
 
   async function handleDownload() {
-    if (!cardRef.current) return;
-    const dataUrl = await toPng(cardRef.current, { pixelRatio: 3 });
+    const S = 3;
+    const W = 320 * S;
+    const H = Math.round(320 * 16 / 9) * S;
+
+    await document.fonts.ready;
+
+    const canvas = document.createElement("canvas");
+    canvas.width = W;
+    canvas.height = H;
+    const ctx = canvas.getContext("2d");
+
+    // 1. Background
+    if (bgUrl && confirmedTransform) {
+      const img = new Image();
+      await new Promise(r => { img.onload = r; img.src = bgUrl; });
+
+      ctx.save();
+      if (confirmedTransform.blur > 0) ctx.filter = `blur(${confirmedTransform.blur * S}px)`;
+      const imgW = W * confirmedTransform.scale;
+      const imgH = imgW * (img.naturalHeight / img.naturalWidth);
+      const cx = W / 2 + confirmedTransform.x * S;
+      const cy = H / 2 + confirmedTransform.y * S;
+      ctx.drawImage(img, cx - imgW / 2, cy - imgH / 2, imgW, imgH);
+      ctx.restore();
+      ctx.fillStyle = "rgba(0,0,0,0.4)";
+      ctx.fillRect(0, 0, W, H);
+    } else {
+      const grad = ctx.createLinearGradient(0, 0, W, H);
+      grad.addColorStop(0, "#1a1025");
+      grad.addColorStop(0.6, "#0d0d1a");
+      grad.addColorStop(1, "#1a0d2e");
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, W, H);
+    }
+
+    // 2. Quote mark
+    ctx.font = `${96 * S}px "Archivo Black", sans-serif`;
+    ctx.fillStyle = "rgba(255,255,255,0.3)";
+    ctx.fillText("\u201C", 32 * S, 110 * S);
+
+    // 3. Lyrics
+    const lineH = fontSize * S * 1.5;
+    const totalH = lines.length * lineH;
+    let y = (H - totalH) / 2 + fontSize * S;
+    const x = 40 * S;
+    ctx.font = `${fontSize * S}px "Archivo Black", sans-serif`;
+
+    for (const line of lines) {
+      if (lineBar !== "none") {
+        const metrics = ctx.measureText(line);
+        ctx.fillStyle = lineBar === "white"
+          ? `rgba(255,255,255,${lineBarOpacity})`
+          : `rgba(0,0,0,${lineBarOpacity})`;
+        ctx.fillRect(x - 6 * S, y - fontSize * S * 0.85, metrics.width + 12 * S, lineH * 0.95);
+      }
+      ctx.fillStyle = textColor === "white" ? "#ffffff" : "#000000";
+      ctx.fillText(line, x, y);
+      y += lineH;
+    }
+
+    // 4. Bottom bar
+    const barH = 100 * S;
+    const bottomGrad = ctx.createLinearGradient(0, H - barH, 0, H);
+    bottomGrad.addColorStop(0, "rgba(0,0,0,0)");
+    bottomGrad.addColorStop(1, "rgba(0,0,0,0.7)");
+    ctx.fillStyle = bottomGrad;
+    ctx.fillRect(0, H - barH, W, barH);
+
+    ctx.font = `bold ${14 * S}px "Archivo Black", sans-serif`;
+    ctx.fillStyle = "#ffffff";
+    ctx.fillText(song.trackName, 32 * S, H - 44 * S);
+
+    ctx.font = `${12 * S}px "Space Grotesk", sans-serif`;
+    ctx.fillStyle = "rgba(255,255,255,0.6)";
+    ctx.fillText(song.artistName, 32 * S, H - 26 * S);
+
+    if (song.albumName) {
+      const albumMetrics = ctx.measureText(song.albumName);
+      ctx.fillStyle = "rgba(255,255,255,0.4)";
+      ctx.fillText(song.albumName, W - 32 * S - albumMetrics.width, H - 26 * S);
+    }
+
     const link = document.createElement("a");
     link.download = `${song.trackName} — ${song.artistName}.png`;
-    link.href = dataUrl;
+    link.href = canvas.toDataURL("image/png");
     link.click();
   }
 
