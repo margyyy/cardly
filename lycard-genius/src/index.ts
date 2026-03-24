@@ -141,47 +141,54 @@ async function scrapeLyrics(
   const apiKey = process.env.WEBSCRAPING_AI_KEY;
   if (!apiKey) {
     console.error("WEBSCRAPING_AI_KEY is missing");
-    return "";
+    return "DEBUG_ERROR: WEBSCRAPING_AI_KEY is missing in environment variables.";
   }
 
-  const page = await axios.get("https://api.webscraping.ai/html", {
-    params: {
-      api_key: apiKey,
-      url: `https://genius.com${path}`,
-    },
-  });
+  try {
+    const page = await axios.get("https://api.webscraping.ai/html", {
+      params: {
+        api_key: apiKey,
+        url: `https://genius.com${path}`,
+      },
+    });
 
-  // 3. Parse lyrics with cheerio
-  const $ = cheerio.load(page.data);
-  const containers = $('[data-lyrics-container="true"]');
+    // 3. Parse lyrics with cheerio
+    const $ = cheerio.load(page.data);
+    const containers = $('[data-lyrics-container="true"]');
 
-  if (containers.length === 0) return "";
+    if (containers.length === 0) {
+      console.error("No lyrics containers found. HTML preview:", page.data.slice(0, 200));
+      return `DEBUG_ERROR: No lyrics containers found. HTML start: ${page.data.slice(0, 100)}`;
+    }
 
-  // Remove non-lyric elements before extracting text
-  containers
-    .find("img, noscript, .LyricsHeader, [class*='Contributors']")
-    .remove();
-  containers.find("br").replaceWith("\n");
+    // Remove non-lyric elements before extracting text
+    containers
+      .find("img, noscript, .LyricsHeader, [class*='Contributors']")
+      .remove();
+    containers.find("br").replaceWith("\n");
 
-  let lyrics = "";
-  containers.each((_, el) => {
-    lyrics += $(el).text() + "\n";
-  });
+    let lyrics = "";
+    containers.each((_, el) => {
+      lyrics += $(el).text() + "\n";
+    });
 
-  lyrics = lyrics.trim();
+    lyrics = lyrics.trim();
 
-  // Strip the junk header (contributor count, translations, song description)
-  // that appears before the first section marker or lyric line
-  const firstBracket = lyrics.indexOf("[");
-  if (
-    firstBracket > 0 &&
-    /contributors|read more|translations/i.test(lyrics.slice(0, firstBracket))
-  ) {
-    lyrics = lyrics.slice(firstBracket).trim();
+    // Strip the junk header
+    const firstBracket = lyrics.indexOf("[");
+    if (
+      firstBracket > 0 &&
+      /contributors|read more|translations/i.test(lyrics.slice(0, firstBracket))
+    ) {
+      lyrics = lyrics.slice(firstBracket).trim();
+    }
+
+    lyricsCache.set(songId, lyrics);
+    return lyrics;
+  } catch (err: any) {
+    console.error("Scraping failed:", err.message);
+    return `DEBUG_ERROR: Scraping failed - ${err.message}`;
   }
-
-  lyricsCache.set(songId, lyrics);
-  return lyrics;
 }
 
 // ── Elysia app ───────────────────────────────────────────────────
