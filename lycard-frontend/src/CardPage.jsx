@@ -24,7 +24,10 @@ export default function CardPage() {
   const dragStart = useRef({ x: 0, y: 0, tx: 0, ty: 0 });
   const cardRef = useRef(null);
 
-  if (!song) { navigate("/"); return null; }
+  if (!song) {
+    navigate("/");
+    return null;
+  }
 
   function handleUpload(e) {
     const file = e.target.files?.[0];
@@ -39,24 +42,34 @@ export default function CardPage() {
     reader.readAsDataURL(file);
   }
 
-  const onPointerDown = useCallback((e) => {
-    if (!isResizing) return;
-    e.preventDefault();
-    dragging.current = true;
-    dragStart.current = { x: e.clientX, y: e.clientY, tx: transform.x, ty: transform.y };
-    cardRef.current?.setPointerCapture(e.pointerId);
-  }, [isResizing, transform]);
+  const onPointerDown = useCallback(
+    (e) => {
+      if (!isResizing) return;
+      e.preventDefault();
+      dragging.current = true;
+      dragStart.current = {
+        x: e.clientX,
+        y: e.clientY,
+        tx: transform.x,
+        ty: transform.y,
+      };
+      cardRef.current?.setPointerCapture(e.pointerId);
+    },
+    [isResizing, transform],
+  );
 
   const onPointerMove = useCallback((e) => {
     if (!dragging.current) return;
-    setTransform(t => ({
+    setTransform((t) => ({
       ...t,
       x: dragStart.current.tx + (e.clientX - dragStart.current.x),
       y: dragStart.current.ty + (e.clientY - dragStart.current.y),
     }));
   }, []);
 
-  const onPointerUp = useCallback(() => { dragging.current = false; }, []);
+  const onPointerUp = useCallback(() => {
+    dragging.current = false;
+  }, []);
 
   function confirmResize() {
     setConfirmedTransform({ ...transform });
@@ -79,7 +92,7 @@ export default function CardPage() {
   async function handleDownload() {
     const S = 3;
     const W = 320 * S;
-    const H = Math.round(320 * 16 / 9) * S;
+    const H = Math.round((320 * 16) / 9) * S;
 
     await document.fonts.ready;
 
@@ -91,10 +104,14 @@ export default function CardPage() {
     // 1. Background
     if (bgUrl && confirmedTransform) {
       const img = new Image();
-      await new Promise(r => { img.onload = r; img.src = bgUrl; });
+      await new Promise((r) => {
+        img.onload = r;
+        img.src = bgUrl;
+      });
 
       ctx.save();
-      if (confirmedTransform.blur > 0) ctx.filter = `blur(${confirmedTransform.blur * S}px)`;
+      if (confirmedTransform.blur > 0)
+        ctx.filter = `blur(${confirmedTransform.blur * S}px)`;
       const imgW = W * confirmedTransform.scale;
       const imgH = imgW * (img.naturalHeight / img.naturalWidth);
       const cx = W / 2 + confirmedTransform.x * S;
@@ -127,10 +144,16 @@ export default function CardPage() {
     for (const line of lines) {
       if (lineBar !== "none") {
         const metrics = ctx.measureText(line);
-        ctx.fillStyle = lineBar === "white"
-          ? `rgba(255,255,255,${lineBarOpacity})`
-          : `rgba(0,0,0,${lineBarOpacity})`;
-        ctx.fillRect(x - 6 * S, y - fontSize * S * 0.85, metrics.width + 12 * S, lineH * 0.95);
+        ctx.fillStyle =
+          lineBar === "white"
+            ? `rgba(255,255,255,${lineBarOpacity})`
+            : `rgba(0,0,0,${lineBarOpacity})`;
+        ctx.fillRect(
+          x - 6 * S,
+          y - fontSize * S * 0.85,
+          metrics.width + 12 * S,
+          lineH * 0.95,
+        );
       }
       ctx.fillStyle = textColor === "white" ? "#ffffff" : "#000000";
       ctx.fillText(line, x, y);
@@ -149,7 +172,7 @@ export default function CardPage() {
     ctx.fillStyle = "#ffffff";
     ctx.fillText(song.trackName, 32 * S, H - 44 * S);
 
-    ctx.font = `${12 * S}px "Space Grotesk", sans-serif`;
+    ctx.font = `${12 * S}px "Archivo Black", sans-serif`;
     ctx.fillStyle = "rgba(255,255,255,0.6)";
     ctx.fillText(song.artistName, 32 * S, H - 26 * S);
 
@@ -167,12 +190,16 @@ export default function CardPage() {
 
   return (
     <div className="w-full max-w-4xl px-6 py-10 flex flex-col gap-6">
-      <Button variant="default" size="sm" className="self-start" onClick={() => navigate(-1)}>
+      <Button
+        variant="default"
+        size="sm"
+        className="self-start"
+        onClick={() => navigate(-1)}
+      >
         ← Back
       </Button>
 
       <div className="flex flex-col items-center gap-4">
-
         {/* ── Card ── */}
         <div
           ref={cardRef}
@@ -191,17 +218,26 @@ export default function CardPage() {
                 className="absolute max-w-none pointer-events-none select-none"
                 style={{
                   transform: `translate(calc(-50% + ${transform.x}px), calc(-50% + ${transform.y}px)) scale(${transform.scale})`,
-                  top: "50%", left: "50%",
+                  top: "50%",
+                  left: "50%",
                   width: "100%",
                   transformOrigin: "center",
-                  filter: transform.blur > 0 ? `blur(${transform.blur}px)` : undefined,
+                  filter:
+                    transform.blur > 0
+                      ? `blur(${transform.blur}px)`
+                      : undefined,
                 }}
               />
               <div className="absolute inset-0 bg-black/40 pointer-events-none" />
             </>
           ) : (
-            <div className="absolute inset-0"
-                 style={{ background: "linear-gradient(135deg, #1a1025 0%, #0d0d1a 60%, #1a0d2e 100%)" }} />
+            <div
+              className="absolute inset-0"
+              style={{
+                background:
+                  "linear-gradient(135deg, #1a1025 0%, #0d0d1a 60%, #1a0d2e 100%)",
+              }}
+            />
           )}
 
           {/* resize hint overlay */}
@@ -210,45 +246,80 @@ export default function CardPage() {
           )}
 
           {/* quote mark */}
-          <span className="absolute top-6 left-8 text-white/30 select-none pointer-events-none"
-                style={{ fontFamily: "'Archivo Black', sans-serif", fontSize: "96px", lineHeight: 1 }}>
+          <span
+            className="absolute top-6 left-8 text-white/30 select-none pointer-events-none"
+            style={{
+              fontFamily: "'Archivo Black', sans-serif",
+              fontSize: "96px",
+              lineHeight: 1,
+            }}
+          >
             "
           </span>
 
           {/* lyrics */}
           <div className="absolute inset-0 flex flex-col items-start justify-center px-10 gap-1.5 pointer-events-none">
             {lines.map((line, i) => (
-              <p key={i} className="text-left leading-snug"
-                 style={{
-                   fontFamily: "'Archivo Black', sans-serif",
-                   fontSize: `${fontSize}px`,
-                   color: textColor === "white" ? "#ffffff" : "#000000",
-                 }}>
+              <p
+                key={i}
+                className="text-left leading-snug"
+                style={{
+                  fontFamily: "'Archivo Black', sans-serif",
+                  fontSize: `${fontSize}px`,
+                  color: textColor === "white" ? "#ffffff" : "#000000",
+                }}
+              >
                 {lineBar !== "none" ? (
-                  <span style={{
-                    backgroundColor: lineBar === "white" ? `rgba(255,255,255,${lineBarOpacity})` : `rgba(0,0,0,${lineBarOpacity})`,
-                    padding: "2px 6px",
-                    boxDecorationBreak: "clone",
-                    WebkitBoxDecorationBreak: "clone",
-                    display: "inline",
-                  }}>{line}</span>
-                ) : line}
+                  <span
+                    style={{
+                      backgroundColor:
+                        lineBar === "white"
+                          ? `rgba(255,255,255,${lineBarOpacity})`
+                          : `rgba(0,0,0,${lineBarOpacity})`,
+                      padding: "2px 6px",
+                      boxDecorationBreak: "clone",
+                      WebkitBoxDecorationBreak: "clone",
+                      display: "inline",
+                    }}
+                  >
+                    {line}
+                  </span>
+                ) : (
+                  line
+                )}
               </p>
             ))}
           </div>
 
           {/* bottom bar */}
-          <div className="absolute bottom-0 left-0 right-0 px-8 py-4 flex items-end justify-between pointer-events-none"
-               style={{ background: "linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%)" }}>
+          <div
+            className="absolute bottom-0 left-0 right-0 px-8 py-4 flex items-end justify-between pointer-events-none"
+            style={{
+              background:
+                "linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%)",
+            }}
+          >
             <div>
-              <p className="text-white text-sm leading-tight"
-                 style={{ fontFamily: "'Archivo Black', sans-serif" }}>{song.trackName}</p>
-              <p className="text-white/60 text-xs mt-0.5"
-                 style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{song.artistName}</p>
+              <p
+                className="text-white text-sm leading-tight"
+                style={{ fontFamily: "'Archivo Black', sans-serif" }}
+              >
+                {song.trackName}
+              </p>
+              <p
+                className="text-white/60 text-xs mt-0.5"
+                style={{ fontFamily: "'Archivo Black', sans-serif" }}
+              >
+                {song.artistName}
+              </p>
             </div>
             {song.albumName && (
-              <p className="text-white/40 text-xs"
-                 style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{song.albumName}</p>
+              <p
+                className="text-white/40 text-xs"
+                style={{ fontFamily: "'Archivo Black', sans-serif" }}
+              >
+                {song.albumName}
+              </p>
             )}
           </div>
         </div>
@@ -261,9 +332,13 @@ export default function CardPage() {
                 Zoom — {Math.round(transform.scale * 100)}%
               </label>
               <Slider
-                min={0.5} max={5} step={0.01}
+                min={0.5}
+                max={5}
+                step={0.01}
                 value={[transform.scale]}
-                onValueChange={([v]) => setTransform(t => ({ ...t, scale: v }))}
+                onValueChange={([v]) =>
+                  setTransform((t) => ({ ...t, scale: v }))
+                }
               />
             </div>
             <div className="flex flex-col gap-1">
@@ -271,14 +346,22 @@ export default function CardPage() {
                 Blur — {transform.blur}px
               </label>
               <Slider
-                min={0} max={20} step={0.5}
+                min={0}
+                max={20}
+                step={0.5}
                 value={[transform.blur]}
-                onValueChange={([v]) => setTransform(t => ({ ...t, blur: v }))}
+                onValueChange={([v]) =>
+                  setTransform((t) => ({ ...t, blur: v }))
+                }
               />
             </div>
             <div className="flex gap-2">
-              <Button variant="default" size="sm" onClick={confirmResize}>Apply</Button>
-              <Button variant="outline" size="sm" onClick={cancelResize}>Cancel</Button>
+              <Button variant="default" size="sm" onClick={confirmResize}>
+                Apply
+              </Button>
+              <Button variant="outline" size="sm" onClick={cancelResize}>
+                Cancel
+              </Button>
             </div>
           </div>
         )}
@@ -286,12 +369,11 @@ export default function CardPage() {
         {/* ── Panels ── */}
         {!isResizing && (
           <div className="w-full max-w-[320px] flex flex-col gap-2">
-
             {/* Edit Background */}
             <div className="border-2 border-black bg-white">
               <button
                 className="w-full flex items-center justify-between px-4 py-2.5 font-head text-sm uppercase tracking-widest hover:bg-black/5 transition-colors"
-                onClick={() => setOpenPanel(p => p === "bg" ? null : "bg")}
+                onClick={() => setOpenPanel((p) => (p === "bg" ? null : "bg"))}
               >
                 Edit Background
                 <span>{openPanel === "bg" ? "▲" : "▼"}</span>
@@ -300,13 +382,23 @@ export default function CardPage() {
                 <div className="flex flex-col gap-2 px-4 pb-4 pt-1">
                   <label className="w-full flex items-center justify-center gap-2 border-2 border-black border-dashed px-4 py-2.5 cursor-pointer font-head text-sm shadow-sm hover:shadow-none hover:translate-y-0.5 transition-all bg-white">
                     {bgUrl ? "Change background" : "Upload background"}
-                    <input type="file" accept="image/*" className="hidden" onChange={handleUpload} />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleUpload}
+                    />
                   </label>
                   {confirmedTransform && (
-                    <Button variant="outline" size="sm" className="w-full" onClick={() => {
-                      setTransform({ ...confirmedTransform });
-                      setIsResizing(true);
-                    }}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full"
+                      onClick={() => {
+                        setTransform({ ...confirmedTransform });
+                        setIsResizing(true);
+                      }}
+                    >
                       Edit
                     </Button>
                   )}
@@ -318,7 +410,9 @@ export default function CardPage() {
             <div className="border-2 border-black bg-white">
               <button
                 className="w-full flex items-center justify-between px-4 py-2.5 font-head text-sm uppercase tracking-widest hover:bg-black/5 transition-colors"
-                onClick={() => setOpenPanel(p => p === "text" ? null : "text")}
+                onClick={() =>
+                  setOpenPanel((p) => (p === "text" ? null : "text"))
+                }
               >
                 Edit Text
                 <span>{openPanel === "text" ? "▲" : "▼"}</span>
@@ -330,13 +424,17 @@ export default function CardPage() {
                       Font size — {fontSize}px
                     </label>
                     <Slider
-                      min={8} max={28} step={1}
+                      min={8}
+                      max={28}
+                      step={1}
                       value={[fontSize]}
                       onValueChange={([v]) => setFontSize(v)}
                     />
                   </div>
                   <div className="flex flex-col gap-1.5">
-                    <span className="font-head text-xs uppercase tracking-widest">Text color</span>
+                    <span className="font-head text-xs uppercase tracking-widest">
+                      Text color
+                    </span>
                     <div className="flex gap-2">
                       {["white", "black"].map((c) => (
                         <button
@@ -350,7 +448,9 @@ export default function CardPage() {
                     </div>
                   </div>
                   <div className="flex flex-col gap-1.5">
-                    <span className="font-head text-xs uppercase tracking-widest">Line bar</span>
+                    <span className="font-head text-xs uppercase tracking-widest">
+                      Line bar
+                    </span>
                     <div className="flex gap-2">
                       {["none", "white", "black"].map((b) => (
                         <button
@@ -369,7 +469,9 @@ export default function CardPage() {
                         Bar opacity — {Math.round(lineBarOpacity * 100)}%
                       </label>
                       <Slider
-                        min={0} max={1} step={0.01}
+                        min={0}
+                        max={1}
+                        step={0.01}
                         value={[lineBarOpacity]}
                         onValueChange={([v]) => setLineBarOpacity(v)}
                       />
@@ -379,7 +481,12 @@ export default function CardPage() {
               )}
             </div>
 
-            <Button variant="secondary" size="sm" className="w-full" onClick={handleDownload}>
+            <Button
+              variant="secondary"
+              size="sm"
+              className="w-full"
+              onClick={handleDownload}
+            >
               Download PNG
             </Button>
           </div>

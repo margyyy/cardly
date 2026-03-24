@@ -1,35 +1,35 @@
 @import "tailwindcss";
 
 @theme inline {
-  --font-head: 'Archivo Black', sans-serif;
-  --font-sans: 'Space Grotesk', sans-serif;
+  --font-head: "Archivo Black", sans-serif;
+  --font-sans: "Archivo Black", sans-serif;
 
   /* map CSS vars → Tailwind color utilities */
-  --color-background:         var(--background);
-  --color-foreground:         var(--foreground);
-  --color-card:               var(--card);
-  --color-card-foreground:    var(--card-foreground);
-  --color-popover:            var(--popover);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
-  --color-primary:            var(--primary);
-  --color-primary-hover:      var(--primary-hover);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
   --color-primary-foreground: var(--primary-foreground);
-  --color-secondary:          var(--secondary);
+  --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted:              var(--muted);
-  --color-muted-foreground:   var(--muted-foreground);
-  --color-accent:             var(--accent);
-  --color-accent-foreground:  var(--accent-foreground);
-  --color-destructive:        var(--destructive);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
-  --color-border:             var(--border);
-  --color-input:              var(--input);
-  --color-ring:               var(--ring);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
 
   /* shadows use --border at time of use */
   --shadow-xs: 1px 1px 0 0 var(--border);
   --shadow-sm: 2px 2px 0 0 var(--border);
-  --shadow:    3px 3px 0 0 var(--border);
+  --shadow: 3px 3px 0 0 var(--border);
   --shadow-md: 4px 4px 0 0 var(--border);
   --shadow-lg: 6px 6px 0 0 var(--border);
   --shadow-xl: 10px 10px 0 1px var(--border);
@@ -41,25 +41,25 @@
   --background: #fffbf2;
   --foreground: #000000;
   --muted: #fffbf2;
-  --muted-foreground: #5B3B98;
-  --card: #FFFFFF;
+  --muted-foreground: #5b3b98;
+  --card: #ffffff;
   --card-foreground: #000000;
-  --popover: #FFFFFF;
+  --popover: #ffffff;
   --popover-foreground: #000000;
   --border: #000000;
-  --input: #FFFFFF;
-  --primary: #C4A1FF;
-  --primary-hover: #9678FF;
+  --input: #ffffff;
+  --primary: #c4a1ff;
+  --primary-hover: #9678ff;
   --primary-foreground: #000000;
-  --secondary: #E7F193;
+  --secondary: #e7f193;
   --secondary-foreground: #000000;
-  --accent: #FE91E9;
+  --accent: #fe91e9;
   --accent-foreground: #000000;
-  --destructive: #FE3B3B;
-  --destructive-foreground: #FFFFFF;
+  --destructive: #fe3b3b;
+  --destructive-foreground: #ffffff;
   --ring: #000000;
 
-  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-family: "Archivo Black", system-ui, sans-serif;
   font-size: 16px;
   line-height: 1.5;
   color: var(--foreground);
@@ -80,22 +80,26 @@
   --popover-foreground: #ffffff;
   --border: #2a2a2e;
   --input: #2a2a2e;
-  --primary: #C4A1FF;
-  --primary-hover: #9678FF;
+  --primary: #c4a1ff;
+  --primary-hover: #9678ff;
   --primary-foreground: #000000;
-  --secondary: #E7F193;
+  --secondary: #e7f193;
   --secondary-foreground: #000000;
-  --accent: #FE91E9;
+  --accent: #fe91e9;
   --accent-foreground: #000000;
-  --destructive: #FE3B3B;
+  --destructive: #fe3b3b;
   --destructive-foreground: #ffffff;
-  --ring: #C4A1FF;
+  --ring: #c4a1ff;
 }
 
 /* dot grid background */
 html {
   background-color: #fffbf2;
-  background-image: radial-gradient(circle, rgba(0,0,0,0.10) 1px, transparent 1px);
+  background-image: radial-gradient(
+    circle,
+    rgba(0, 0, 0, 0.1) 1px,
+    transparent 1px
+  );
   background-size: 22px 22px;
   min-height: 100%;
 }
