@@ -1,7 +1,7 @@
 import { Elysia } from "elysia";
 import axios from "axios";
 import * as cheerio from "cheerio";
-import { api } from "./api";
+import { api } from "./api.js";
 import { cors } from "@elysiajs/cors";
 
 type SongDTO = {
