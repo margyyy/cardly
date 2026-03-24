@@ -1,31 +1,6 @@
 import { useRef, useState, useCallback } from "react";
-import { toPng } from "html-to-image";
+import { domToPng } from "modern-screenshot";
 
-let cachedFontCSS = null;
-async function getArchivoBlackCSS() {
-  if (cachedFontCSS) return cachedFontCSS;
-  const css = await fetch(
-    "https://fonts.googleapis.com/css2?family=Archivo+Black&display=block",
-    { headers: { "User-Agent": navigator.userAgent } },
-  ).then((r) => r.text());
-  const urls = [...css.matchAll(/url\((https?:\/\/[^)]+)\)/g)].map(
-    (m) => m[1],
-  );
-  const embedded = await Promise.all(
-    urls.map(async (url) => {
-      const buf = await fetch(url).then((r) => r.arrayBuffer());
-      const bytes = new Uint8Array(buf);
-      let bin = "";
-      for (let i = 0; i < bytes.byteLength; i++) bin += String.fromCharCode(bytes[i]);
-      return { url, b64: `data:font/woff2;base64,${btoa(bin)}` };
-    }),
-  );
-  cachedFontCSS = embedded.reduce(
-    (s, { url, b64 }) => s.replace(url, b64),
-    css,
-  );
-  return cachedFontCSS;
-}
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/retroui/Button";
 import { Slider } from "@/components/retroui/Slider";
@@ -117,17 +92,46 @@ export default function CardPage() {
   const activeBg = isResizing || confirmedTransform;
 
   async function handleDownload() {
-    await document.fonts.ready;
-    const fontEmbedCSS = await getArchivoBlackCSS();
-    const dataUrl = await toPng(cardRef.current, {
-      pixelRatio: 3,
-      skipFonts: true,
-      fontEmbedCSS,
-    });
-    const link = document.createElement("a");
-    link.download = `${song.trackName} — ${song.artistName}.png`;
-    link.href = dataUrl;
-    link.click();
+    try {
+      await document.fonts.ready;
+      const { width, height } = cardRef.current.getBoundingClientRect();
+      const fontRule = Array.from(document.styleSheets)
+        .flatMap((sheet) => {
+          try { return Array.from(sheet.cssRules); }
+          catch { return []; }
+        })
+        .find((r) => r instanceof CSSFontFaceRule);
+      const dataUrl = await domToPng(cardRef.current, {
+        scale: 3,
+        width,
+        height,
+        fixSvgXmlDecode: true,
+        drawImageInterval: 300,
+        onCreateForeignObjectSvg: (svg) => {
+          if (fontRule) {
+            const style = svg.querySelector("style");
+            if (style) style.textContent += "\n" + fontRule.cssText;
+          }
+        },
+      });
+
+      const fileName = `${song.trackName} — ${song.artistName}.png`;
+      const blob = await fetch(dataUrl).then((r) => r.blob());
+      const file = new File([blob], fileName, { type: "image/png" });
+
+      if (navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ files: [file] });
+      } else {
+        const blobUrl = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = blobUrl;
+        link.download = fileName;
+        link.click();
+        URL.revokeObjectURL(blobUrl);
+      }
+    } catch (err) {
+      alert("Errore: " + err.message);
+    }
   }
 
   return (
@@ -282,8 +286,8 @@ export default function CardPage() {
               </label>
               <Slider
                 min={0}
-                max={20}
-                step={0.5}
+                max={10}
+                step={0.1}
                 value={[transform.blur]}
                 onValueChange={([v]) =>
                   setTransform((t) => ({ ...t, blur: v }))
