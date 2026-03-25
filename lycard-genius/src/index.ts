@@ -122,7 +122,7 @@ async function getSong(id: number) {
 }
 
 // ── Lyrics scraping ──────────────────────────────────────────────
-const lyricsCache = new Map<number, string>();
+const lyricsCache = new Map<number, string>(); // cleared on restart
 
 async function scrapeLyrics(
   songId: number,
@@ -174,13 +174,21 @@ async function scrapeLyrics(
 
     lyrics = lyrics.trim();
 
-    // Strip the junk header
-    const firstBracket = lyrics.indexOf("[");
-    if (
-      firstBracket > 0 &&
-      /contributors|read more|translations/i.test(lyrics.slice(0, firstBracket))
-    ) {
-      lyrics = lyrics.slice(firstBracket).trim();
+    // Strip Genius header garbage (title + "Lyrics", contributor count, etc.)
+    const junkRe = /contributors?|read more|translations?|lyrics|ha presentato|presented the/i;
+
+    // Case 1: section markers present — strip everything before first [
+    const bi = lyrics.indexOf("[");
+    if (bi > 0 && junkRe.test(lyrics.slice(0, bi))) {
+      lyrics = lyrics.slice(bi).trim();
+    } else {
+      // Case 2: no section markers — strip first "line" if it's junk
+      // (header text is usually concatenated without \n)
+      const ni = lyrics.indexOf("\n");
+      const firstLine = ni >= 0 ? lyrics.slice(0, ni) : lyrics;
+      if (junkRe.test(firstLine)) {
+        lyrics = ni >= 0 ? lyrics.slice(ni + 1).trim() : "";
+      }
     }
 
     lyricsCache.set(songId, lyrics);

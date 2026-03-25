@@ -6,6 +6,17 @@ import { Button } from "@/components/retroui/Button";
 import { Slider } from "@/components/retroui/Slider";
 import { useLang } from "./LanguageContext.jsx";
 
+const SPACED_PRESETS = [
+  { wordSpacing: "0.3em", letterSpacing: "0.01em", lineHeight: "1.4" },
+  { wordSpacing: "1.5em", letterSpacing: "0.05em", lineHeight: "1.6" },
+  { wordSpacing: "3em",   letterSpacing: "0.15em", lineHeight: "1.8" },
+  { wordSpacing: "0.8em", letterSpacing: "0.3em",  lineHeight: "1.5" },
+  { wordSpacing: "5em",   letterSpacing: "0em",    lineHeight: "1.3" },
+  { wordSpacing: "0.1em", letterSpacing: "0.6em",  lineHeight: "2"   },
+  { wordSpacing: "2em",   letterSpacing: "0.1em",  lineHeight: "1.2" },
+];
+const randomFrom = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
 function parseQueryData(search) {
   try {
     const q = new URLSearchParams(search);
@@ -18,7 +29,7 @@ function parseQueryData(search) {
 }
 
 // ── Shared: lyrics lines renderer ────────────────────────────────
-function LyricLines({ lines, fontSize, textColor, lineBar, lineBarOpacity }) {
+function LyricLines({ lines, fontSize, textColor, lineBar, lineBarOpacity, spacedText }) {
   return lines.map((line, i) => (
     <p
       key={i}
@@ -27,6 +38,14 @@ function LyricLines({ lines, fontSize, textColor, lineBar, lineBarOpacity }) {
         fontFamily: "'Archivo Black', sans-serif",
         fontSize: `${fontSize}px`,
         color: textColor === "white" ? "#ffffff" : "#000000",
+        width: "100%",
+        ...(spacedText ? {
+          wordSpacing: spacedText.wordSpacing,
+          letterSpacing: spacedText.letterSpacing,
+          lineHeight: spacedText.lineHeight,
+          textAlign: "justify",
+          textAlignLast: "justify",
+        } : {}),
       }}
     >
       {lineBar !== "none" ? (
@@ -103,6 +122,7 @@ export default function CardPage() {
   const [transform, setTransform] = useState({ x: 0, y: 0, scale: 1, blur: 0 });
   const [confirmedTransform, setConfirmedTransform] = useState(null);
   const [cardStyle, setCardStyle] = useState("portrait"); // "portrait" | "square"
+  const [spacedText, setSpacedText] = useState(null);
   const prevTransform = useRef(null);
 
   const dragging = useRef(false);
@@ -280,6 +300,7 @@ export default function CardPage() {
               textColor={textColor}
               lineBar={lineBar}
               lineBarOpacity={lineBarOpacity}
+              spacedText={spacedText}
             />
           </div>
 
@@ -391,6 +412,40 @@ export default function CardPage() {
                       {s === "portrait" ? t.stylePortrait : t.styleSquare}
                     </button>
                   ))}
+                </div>
+              )}
+            </div>
+
+            {/* Spaced Text */}
+            <div className="border-2 border-black bg-white">
+              <button
+                className="w-full flex items-center justify-between px-4 py-2.5 font-head text-sm uppercase tracking-widest hover:bg-black/5 transition-colors"
+                onClick={() => setOpenPanel((p) => (p === "spaced" ? null : "spaced"))}
+              >
+                <span className="flex items-center gap-2">
+                  {t.spacedText}
+                  {spacedText && <span className="w-1.5 h-1.5 rounded-full bg-black inline-block" />}
+                </span>
+                <span>{openPanel === "spaced" ? "▲" : "▼"}</span>
+              </button>
+              {openPanel === "spaced" && (
+                <div className="flex gap-2 px-4 pb-4 pt-1">
+                  <button
+                    onClick={() => setSpacedText((s) => (s ? null : SPACED_PRESETS[0]))}
+                    className={`flex-1 py-1.5 border-2 border-black font-head text-xs uppercase tracking-widest transition-all ${
+                      spacedText
+                        ? "bg-black text-white shadow-none translate-y-0.5"
+                        : "bg-white text-black shadow-sm hover:shadow-none hover:translate-y-0.5"
+                    }`}
+                  >
+                    {spacedText ? t.deactivate : t.activate}
+                  </button>
+                  <button
+                    onClick={() => setSpacedText(randomFrom(SPACED_PRESETS))}
+                    className="flex-1 py-1.5 border-2 border-black font-head text-xs uppercase tracking-widest bg-white text-black shadow-sm hover:shadow-none hover:translate-y-0.5 transition-all"
+                  >
+                    {t.randomize}
+                  </button>
                 </div>
               )}
             </div>

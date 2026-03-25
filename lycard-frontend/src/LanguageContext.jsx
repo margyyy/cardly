@@ -38,6 +38,10 @@ const translations = {
     changeStyle: "Change Style",
     stylePortrait: "9:16",
     styleSquare: "Square",
+    spacedText: "Spaced Text",
+    activate: "Activate",
+    deactivate: "Deactivate",
+    randomize: "Randomize",
   },
   it: {
     search: "Cerca",
@@ -77,6 +81,10 @@ const translations = {
     changeStyle: "Cambia stile",
     stylePortrait: "9:16",
     styleSquare: "Quadrato",
+    spacedText: "Spaced Text",
+    activate: "Attiva",
+    deactivate: "Disattiva",
+    randomize: "Randomizza",
   },
 };
 
