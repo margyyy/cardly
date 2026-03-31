@@ -116,7 +116,7 @@ export default function CardPage() {
   const [fontSize, setFontSize] = useState(14);
   const [textColor, setTextColor] = useState("white");
   const [lineBar, setLineBar] = useState("none");
-  const [lineBarOpacity, setLineBarOpacity] = useState(0.75);
+  const [lineBarOpacity, setLineBarOpacity] = useState(1);
   const [openPanel, setOpenPanel] = useState(null);
   const [isResizing, setIsResizing] = useState(false);
   const [transform, setTransform] = useState({ x: 0, y: 0, scale: 1, blur: 0 });
@@ -518,7 +518,7 @@ export default function CardPage() {
                       ))}
                     </div>
                   </div>
-                  <div className="flex flex-col gap-1.5">
+                  <div className={`flex flex-col gap-1.5 ${spacedText ? "opacity-30 pointer-events-none select-none" : ""}`}>
                     <span className="font-head text-xs uppercase tracking-widest">
                       {t.lineBar}
                     </span>
@@ -541,21 +541,21 @@ export default function CardPage() {
                         </button>
                       ))}
                     </div>
+                    {lineBar !== "none" && (
+                      <div className="flex flex-col gap-1 mt-1">
+                        <label className="font-head text-xs uppercase tracking-widest">
+                          {t.barOpacity} — {Math.round(lineBarOpacity * 100)}%
+                        </label>
+                        <Slider
+                          min={0}
+                          max={1}
+                          step={0.01}
+                          value={[lineBarOpacity]}
+                          onValueChange={([v]) => setLineBarOpacity(v)}
+                        />
+                      </div>
+                    )}
                   </div>
-                  {lineBar !== "none" && (
-                    <div className="flex flex-col gap-1">
-                      <label className="font-head text-xs uppercase tracking-widest">
-                        {t.barOpacity} — {Math.round(lineBarOpacity * 100)}%
-                      </label>
-                      <Slider
-                        min={0}
-                        max={1}
-                        step={0.01}
-                        value={[lineBarOpacity]}
-                        onValueChange={([v]) => setLineBarOpacity(v)}
-                      />
-                    </div>
-                  )}
                   <div className="flex flex-col gap-1.5">
                     <span className="font-head text-xs uppercase tracking-widest flex items-center gap-2">
                       {t.spacedText}
