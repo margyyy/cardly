@@ -8,6 +8,7 @@ import { Loader } from "@/components/retroui/Loader";
 import SongPage from "./SongPage.jsx";
 import CardPage from "./CardPage.jsx";
 import DashboardPage from "./DashboardPage.jsx";
+import NotFoundPage from "./NotFoundPage.jsx";
 import { useLang } from "./LanguageContext.jsx";
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -361,6 +362,7 @@ export default function App() {
       <Route path="/song/:id" element={<SongPage />} />
       <Route path="/card" element={<CardPage />} />
       <Route path="/dashboard" element={<DashboardPage />} />
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 }
