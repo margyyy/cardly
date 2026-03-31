@@ -74,7 +74,7 @@ function SearchForm({ onSearch, loading }) {
   return (
     <Card className="w-full bg-white rounded-none">
       <Card.Header>
-        <h1 className="font-head text-3xl tracking-tight">Cardly</h1>
+        <h1 className="font-head text-3xl tracking-tight">Cardly <span style={{ fontFamily: "Catamaran, sans-serif", fontWeight: 900 }}>"</span></h1>
         <p className="text-sm text-black/50 mt-1">{t.tagline}</p>
       </Card.Header>
       <Card.Content>
