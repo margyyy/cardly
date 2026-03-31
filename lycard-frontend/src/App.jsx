@@ -9,7 +9,7 @@ import SongPage from "./SongPage.jsx";
 import CardPage from "./CardPage.jsx";
 import { useLang } from "./LanguageContext.jsx";
 
-const API_URL = "https://cardly-ugit.vercel.app";
+const API_URL = "https://andreas-association-suggestions-bit.trycloudflare.com";
 
 async function apiGet(path) {
   const res = await fetch(`${API_URL}${path}`);

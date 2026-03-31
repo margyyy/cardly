@@ -6,7 +6,7 @@ import { Card } from "@/components/retroui/Card";
 import { Loader } from "@/components/retroui/Loader";
 import { useLang } from "./LanguageContext.jsx";
 
-const API_URL = "https://cardly-ugit.vercel.app";
+const API_URL = "https://andreas-association-suggestions-bit.trycloudflare.com";
 
 export default function SongPage() {
   const { t } = useLang();

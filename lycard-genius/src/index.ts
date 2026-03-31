@@ -1,128 +1,16 @@
 import { Elysia, t } from "elysia";
+import { cors } from "@elysiajs/cors";
 import axios from "axios";
 import * as cheerio from "cheerio";
-import { api } from "./api.js";
-import { cors } from "@elysiajs/cors";
 
-// ── Search (songs, artists, albums) ──────────────────────────────
-async function search(q: string, type?: string) {
-  const { data } = await api.get("/search", {
-    params: { q },
-  });
+const api = axios.create({
+  baseURL: "https://api.genius.com",
+  headers: {
+    Authorization: `Bearer ${process.env.GENIUS_TOKEN}`,
+  },
+});
 
-  const hits = data.response.hits as any[];
-
-  if (type === "artist") {
-    const seen = new Map<number, any>();
-    for (const hit of hits) {
-      const a = hit.result.primary_artist;
-      if (!seen.has(a.id)) {
-        seen.set(a.id, {
-          id: a.id,
-          name: a.name,
-          image: a.image_url,
-        });
-      }
-    }
-    return { type: "artists", results: [...seen.values()] };
-  }
-
-  if (type === "album") {
-    const seen = new Map<number, any>();
-    for (const hit of hits) {
-      const song = hit.result;
-      if (song.album) {
-        const al = song.album;
-        if (!seen.has(al.id)) {
-          seen.set(al.id, {
-            id: al.id,
-            name: al.name,
-            image: al.cover_art_url,
-            artistName: song.primary_artist?.name,
-          });
-        }
-      }
-    }
-    return { type: "albums", results: [...seen.values()] };
-  }
-
-  // default: songs
-  return {
-    type: "songs",
-    results: hits.map((hit: any) => ({
-      id: hit.result.id,
-      title: hit.result.title,
-      artistName: hit.result.primary_artist?.name,
-      albumName: hit.result.album?.name,
-      image: hit.result.song_art_image_thumbnail_url,
-      path: hit.result.path,
-    })),
-  };
-}
-
-// ── Artist details ───────────────────────────────────────────────
-async function getArtist(id: number) {
-  const { data } = await api.get(`/artists/${id}`);
-  const a = data.response.artist;
-  return {
-    id: a.id,
-    name: a.name,
-    image: a.image_url,
-    description: a.description_preview,
-  };
-}
-
-// ── Artist songs (paginated) ─────────────────────────────────────
-async function getArtistSongs(id: number, page: number, sort: string) {
-  const { data } = await api.get(`/artists/${id}/songs`, {
-    params: { per_page: 20, page, sort },
-  });
-  return {
-    songs: (data.response.songs as any[]).map((s: any) => ({
-      id: s.id,
-      title: s.title,
-      artistName: s.primary_artist?.name,
-      albumName: s.album?.name,
-      image: s.song_art_image_thumbnail_url,
-      path: s.path,
-    })),
-    nextPage: data.response.next_page,
-  };
-}
-
-// ── Album tracks ─────────────────────────────────────────────────
-async function getAlbumTracks(id: number, page: number) {
-  const { data } = await api.get(`/albums/${id}/tracks`, {
-    params: { per_page: 50, page },
-  });
-  return {
-    tracks: (data.response.tracks as any[]).map((t: any) => ({
-      id: t.song.id,
-      title: t.song.title,
-      number: t.number,
-      artistName: t.song.primary_artist?.name,
-      image: t.song.song_art_image_thumbnail_url,
-      path: t.song.path,
-    })),
-    nextPage: data.response.next_page,
-  };
-}
-
-// ── Song details ──────────────────────────────────────────────────
-async function getSong(id: number) {
-  const { data } = await api.get(`/songs/${id}`);
-  const s = data.response.song;
-  return {
-    id: s.id,
-    title: s.title,
-    artistName: s.primary_artist.name,
-    albumName: s.album?.name || "Unknown Album",
-    image: s.song_art_image_url,
-  };
-}
-
-// ── Lyrics scraping ──────────────────────────────────────────────
-const lyricsCache = new Map<number, string>(); // cleared on restart
+const lyricsCache = new Map<number, string>();
 
 async function scrapeLyrics(
   songId: number,
@@ -130,38 +18,42 @@ async function scrapeLyrics(
 ): Promise<string> {
   if (lyricsCache.has(songId)) return lyricsCache.get(songId)!;
 
-  // 1. Get song path from Genius API (skip if already provided)
   let path = songPath;
   if (!path) {
     const { data } = await api.get(`/songs/${songId}`);
     path = data.response.song.path as string;
   }
 
-  // 2. Fetch the Genius page via ScraperAPI
-  const apiKey = process.env.SCRAPERAPI_KEY;
-  if (!apiKey) {
-    console.error("SCRAPERAPI_KEY is missing");
-    return "DEBUG_ERROR: SCRAPERAPI_KEY is missing in environment variables.";
-  }
+  const cleanPath = path.startsWith("http") ? new URL(path).pathname : path;
 
   try {
-    const page = await axios.get("https://api.scraperapi.com/", {
-      params: {
-        api_key: apiKey,
-        url: `https://genius.com${path}`,
+    // Usiamo il FETCH nativo di Bun con header da browser reale
+    const response = await fetch(`https://genius.com${cleanPath}`, {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
+        Accept:
+          "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+        "Accept-Language": "it-IT,it;q=0.9,en-US;q=0.8,en;q=0.7",
+        "Sec-Fetch-Dest": "document",
+        "Sec-Fetch-Mode": "navigate",
+        "Sec-Fetch-Site": "none",
+        "Sec-Fetch-User": "?1",
+        "Upgrade-Insecure-Requests": "1",
       },
     });
 
-    // 3. Parse lyrics with cheerio
-    const $ = cheerio.load(page.data);
-    const containers = $('[data-lyrics-container="true"]');
-
-    if (containers.length === 0) {
-      console.error("No lyrics containers found. HTML preview:", page.data.slice(0, 200));
-      return `DEBUG_ERROR: No lyrics containers found. HTML start: ${page.data.slice(0, 100)}`;
+    if (!response.ok) {
+      throw new Error(`Genius ha risposto con status: ${response.status}`);
     }
 
-    // Remove non-lyric elements before extracting text
+    const html = await response.text();
+    const $ = cheerio.load(html);
+    const containers = $('[data-lyrics-container="true"]');
+
+    if (containers.length === 0)
+      return "Testo non trovato (struttura cambiata).";
+
     containers
       .find("img, noscript, .LyricsHeader, [class*='Contributors']")
       .remove();
@@ -173,72 +65,32 @@ async function scrapeLyrics(
     });
 
     lyrics = lyrics.trim();
-
-    // Strip Genius header garbage (title + "Lyrics", contributor count, etc.)
-    const junkRe = /contributors?|read more|translations?|lyrics|ha presentato|presented the/i;
-
-    // Case 1: section markers present — strip everything before first [
     const bi = lyrics.indexOf("[");
-    if (bi > 0 && junkRe.test(lyrics.slice(0, bi))) {
-      lyrics = lyrics.slice(bi).trim();
-    } else {
-      // Case 2: no section markers — strip first "line" if it's junk
-      // (header text is usually concatenated without \n)
-      const ni = lyrics.indexOf("\n");
-      const firstLine = ni >= 0 ? lyrics.slice(0, ni) : lyrics;
-      if (junkRe.test(firstLine)) {
-        lyrics = ni >= 0 ? lyrics.slice(ni + 1).trim() : "";
-      }
-    }
+    if (bi > 0) lyrics = lyrics.slice(bi).trim();
 
     lyricsCache.set(songId, lyrics);
     return lyrics;
   } catch (err: any) {
-    console.error("Scraping failed:", err.message);
-    return `DEBUG_ERROR: Scraping failed - ${err.message}`;
+    console.error("Errore Scraping:", err.message);
+    return `ERRORE_SCRAPING: ${err.message}`;
   }
 }
 
-// ── Elysia app ───────────────────────────────────────────────────
-const app = new Elysia()
+new Elysia()
   .use(cors())
-  .get("/search", ({ query }) => search(query.q!, query.type), {
-    query: t.Object({
-      q: t.String(),
-      type: t.Optional(t.String()),
-    }),
+  .get("/search", async ({ query }) => {
+    const { data } = await api.get("/search", { params: { q: query.q } });
+    return data.response.hits.map((hit: any) => ({
+      id: hit.result.id,
+      title: hit.result.title,
+      path: hit.result.path,
+    }));
   })
-  .get("/artists/:id", ({ params }) => getArtist(Number(params.id)))
-  .get(
-    "/artists/:id/songs",
-    ({ params, query }) =>
-      getArtistSongs(
-        Number(params.id),
-        Number(query.page ?? 1),
-        query.sort ?? "popularity",
-      ),
-    {
-      query: t.Object({
-        page: t.Optional(t.String()),
-        sort: t.Optional(t.String()),
-      }),
-    },
-  )
-  .get(
-    "/albums/:id/tracks",
-    ({ params, query }) =>
-      getAlbumTracks(Number(params.id), Number(query.page ?? 1)),
-    {
-      query: t.Object({
-        page: t.Optional(t.String()),
-      }),
-    },
-  )
-  .get("/songs/:id", ({ params }) => getSong(Number(params.id)))
   .get(
     "/songs/:id/lyrics",
-    ({ params, query }) => scrapeLyrics(Number(params.id), query.path),
-    { query: t.Object({ path: t.Optional(t.String()) }) },
-  );
+    async ({ params, query }) =>
+      await scrapeLyrics(Number(params.id), query.path),
+  )
+  .listen(3000);
 
-export default app;
+console.log("🦊 Server Arch (Bun Native Fetch) pronto su porta 3000");
