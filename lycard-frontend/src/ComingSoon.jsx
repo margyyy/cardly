@@ -44,7 +44,7 @@ export default function ComingSoon({ children }) {
         className="font-head text-4xl tracking-tight"
         style={{ fontFamily: "'Archivo Black', sans-serif" }}
       >
-        Cardly <span style={{ fontFamily: "Catamaran, sans-serif", fontWeight: 900 }}>"</span>
+        Cardly <span style={{ fontFamily: "'Catamaran', sans-serif", fontWeight: 900 }}>"</span>
       </h1>
 
       {phase === "soon" && (
