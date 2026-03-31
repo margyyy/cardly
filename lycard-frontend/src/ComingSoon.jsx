@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 
-const LAUNCH = new Date("2026-04-01T12:00:00");
-const END    = new Date("2026-04-03T12:00:00");
+const LAUNCH = new Date("2026-04-01T12:00:00+02:00");
+const END    = new Date("2026-04-03T12:00:00+02:00");
 
 function pad(n) {
   return String(n).padStart(2, "0");
