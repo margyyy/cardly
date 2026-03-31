@@ -3,6 +3,8 @@ import { createContext, useContext, useState } from "react";
 const translations = {
   en: {
     tagline: "Turn your favorite lyrics into shareable cards",
+    followUs: "Follow us on Instagram",
+    disclaimer: "Lyrics are property of their respective owners and are displayed for personal, non-commercial use only.",
     search: "Search",
     searchPlaceholder: "Search...",
     songs: "Songs",
@@ -38,6 +40,7 @@ const translations = {
     blur: "Blur",
     changeStyle: "Change Style",
     stylePortrait: "9:16",
+    styleFourFive: "4:5",
     styleSquare: "Square",
     spacedText: "Spaced Text",
     activate: "Activate",
@@ -56,6 +59,8 @@ const translations = {
   },
   it: {
     tagline: "Trasforma i tuoi testi preferiti in card da condividere",
+    followUs: "Seguici su Instagram",
+    disclaimer: "I testi sono di proprietà dei rispettivi autori e vengono mostrati esclusivamente per uso personale e non commerciale.",
     search: "Cerca",
     searchPlaceholder: "Cerca...",
     songs: "Canzoni",
@@ -92,6 +97,7 @@ const translations = {
     blur: "Sfocatura",
     changeStyle: "Cambia stile",
     stylePortrait: "9:16",
+    styleFourFive: "4:5",
     styleSquare: "Quadrato",
     spacedText: "Spaced Text",
     activate: "Attiva",

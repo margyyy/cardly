@@ -195,10 +195,24 @@ export default function CardPage() {
   const activeBg = isResizing || confirmedTransform;
 
   async function handleDownload() {
+    // fire-and-forget analytics
+    try {
+      fetch(`${import.meta.env.VITE_API_URL}/track`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          song: song.trackName,
+          artist: song.artistName,
+          lines: lines.length,
+          format: cardStyle,
+        }),
+      });
+    } catch (_) {}
+
     try {
       await document.fonts.ready;
       const { width, height } = cardRef.current.getBoundingClientRect();
-      const fontRule = Array.from(document.styleSheets)
+      const fontRules = Array.from(document.styleSheets)
         .flatMap((sheet) => {
           try {
             return Array.from(sheet.cssRules);
@@ -206,7 +220,9 @@ export default function CardPage() {
             return [];
           }
         })
-        .find((r) => r instanceof CSSFontFaceRule);
+        .filter((r) => r instanceof CSSFontFaceRule)
+        .map((r) => r.cssText)
+        .join("\n");
       const dataUrl = await domToPng(cardRef.current, {
         scale: 3,
         width,
@@ -214,9 +230,9 @@ export default function CardPage() {
         fixSvgXmlDecode: true,
         drawImageInterval: 300,
         onCreateForeignObjectSvg: (svg) => {
-          if (fontRule) {
+          if (fontRules) {
             const style = svg.querySelector("style");
-            if (style) style.textContent += "\n" + fontRule.cssText;
+            if (style) style.textContent += "\n" + fontRules;
           }
         },
       });
@@ -241,6 +257,7 @@ export default function CardPage() {
   }
 
   const isPortrait = cardStyle === "portrait";
+  const isFourFive = cardStyle === "fourfive";
 
   return (
     <div className="w-full max-w-4xl px-6 py-10 flex flex-col gap-6">
@@ -260,6 +277,8 @@ export default function CardPage() {
           className={`shadow-xl relative overflow-hidden ${
             isPortrait
               ? "w-full max-w-[300px] aspect-[9/16]"
+              : isFourFive
+              ? "w-full max-w-[340px] aspect-[4/5]"
               : "w-full max-w-[340px] aspect-square"
           } ${isResizing ? "cursor-grab active:cursor-grabbing" : ""}`}
           onPointerDown={onPointerDown}
@@ -277,7 +296,8 @@ export default function CardPage() {
           <span
             className="absolute top-5 left-6 text-white/30 select-none pointer-events-none"
             style={{
-              fontFamily: "'Archivo Black', sans-serif",
+              fontFamily: "'Catamaran', sans-serif",
+              fontWeight: 900,
               fontSize: isPortrait ? "80px" : "64px",
               lineHeight: 1,
             }}
@@ -399,7 +419,7 @@ export default function CardPage() {
               </button>
               {openPanel === "style" && (
                 <div className="flex gap-2 px-4 pb-4 pt-1">
-                  {["portrait", "square"].map((s) => (
+                  {["portrait", "fourfive", "square"].map((s) => (
                     <button
                       key={s}
                       onClick={() => setCardStyle(s)}
@@ -409,7 +429,7 @@ export default function CardPage() {
                           : "bg-white text-black shadow-sm hover:shadow-none hover:translate-y-0.5"
                       }`}
                     >
-                      {s === "portrait" ? t.stylePortrait : t.styleSquare}
+                      {s === "portrait" ? t.stylePortrait : s === "fourfive" ? t.styleFourFive : t.styleSquare}
                     </button>
                   ))}
                 </div>

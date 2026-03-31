@@ -1,5 +1,13 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: 'Catamaran';
+  font-style: normal;
+  font-weight: 900;
+  font-display: block;
+  src: url('/fonts/Catamaran-Black.woff2') format('woff2');
+}
+
 @theme inline {
   --font-head: "Archivo Black", sans-serif;
   --font-sans: "Archivo Black", sans-serif;
