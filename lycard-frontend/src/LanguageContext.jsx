@@ -2,6 +2,7 @@ import { createContext, useContext, useState } from "react";
 
 const translations = {
   en: {
+    tagline: "Turn your favorite lyrics into shareable cards",
     search: "Search",
     searchPlaceholder: "Search...",
     songs: "Songs",
@@ -42,8 +43,19 @@ const translations = {
     activate: "Activate",
     deactivate: "Deactivate",
     randomize: "Randomize",
+    manualMode: "Create manually",
+    searchMode: "Search",
+    manualLyrics: "Your text",
+    manualLyricsPlaceholder: "Paste or write your lyrics here...",
+    manualTrack: "Song name (optional)",
+    manualArtist: "Artist name (optional)",
+    manualGenerate: "Generate card →",
+    hintSelectSong: "Select a song to view its lyrics",
+    hintSelectArtist: "Select an artist to browse their songs",
+    hintSelectLines: "Tap lines to select them, then generate your card",
   },
   it: {
+    tagline: "Trasforma i tuoi testi preferiti in card da condividere",
     search: "Cerca",
     searchPlaceholder: "Cerca...",
     songs: "Canzoni",
@@ -85,6 +97,16 @@ const translations = {
     activate: "Attiva",
     deactivate: "Disattiva",
     randomize: "Randomizza",
+    manualMode: "Crea manualmente",
+    searchMode: "Cerca",
+    manualLyrics: "Il tuo testo",
+    manualLyricsPlaceholder: "Incolla o scrivi il testo qui...",
+    manualTrack: "Nome canzone (opzionale)",
+    manualArtist: "Nome artista (opzionale)",
+    manualGenerate: "Genera card →",
+    hintSelectSong: "Seleziona una canzone per vedere il testo",
+    hintSelectArtist: "Seleziona un artista per vedere le sue canzoni",
+    hintSelectLines: "Tocca le righe per selezionarle, poi genera la card",
   },
 };
 

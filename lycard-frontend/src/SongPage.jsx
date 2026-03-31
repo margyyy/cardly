@@ -117,6 +117,10 @@ export default function SongPage() {
       )}
 
       {!loading && !errorKey && lines.length > 0 && (
+        <p className="font-head text-xs uppercase tracking-widest text-black/40">{t.hintSelectLines}</p>
+      )}
+
+      {!loading && !errorKey && lines.length > 0 && (
         <div className="flex flex-col gap-0.5">
           {lines.map((line, i) =>
             line.trim() === "" ? (

@@ -83,12 +83,61 @@ async function scrapeLyrics(
 new Elysia()
   .use(cors())
   .get("/search", async ({ query }) => {
+    const type = (query.type as string) ?? "song";
     const data = await apiGet("/search", { q: query.q as string });
-    return data.response.hits.map((hit: any) => ({
+    const hits = data.response.hits;
+
+    if (type === "artist") {
+      const seen = new Set<number>();
+      const results = hits
+        .map((hit: any) => hit.result.primary_artist)
+        .filter((a: any) => {
+          if (seen.has(a.id)) return false;
+          seen.add(a.id);
+          return true;
+        })
+        .map((a: any) => ({
+          id: a.id,
+          name: a.name,
+          image: a.image_url ?? null,
+        }));
+      return { type: "artists", results };
+    }
+
+    const results = hits.map((hit: any) => ({
       id: hit.result.id,
       title: hit.result.title,
+      artistName: hit.result.primary_artist?.name ?? null,
+      albumName: hit.result.album?.name ?? null,
+      image: hit.result.song_art_image_thumbnail_url ?? null,
       path: hit.result.path,
     }));
+    return { type: "songs", results };
+  })
+  .get("/artists/:id/songs", async ({ params, query }) => {
+    const page = (query.page as string) ?? "1";
+    const sort = (query.sort as string) ?? "title";
+    const data = await apiGet(`/artists/${params.id}/songs`, { page, sort, per_page: "20" });
+    const songs = data.response.songs.map((s: any) => ({
+      id: s.id,
+      title: s.title,
+      artistName: s.primary_artist?.name ?? null,
+      image: s.song_art_image_thumbnail_url ?? null,
+      path: s.path,
+    }));
+    const nextPage = data.response.next_page ?? null;
+    return { songs, nextPage };
+  })
+  .get("/songs/:id", async ({ params }) => {
+    const data = await apiGet(`/songs/${params.id}`);
+    const s = data.response.song;
+    return {
+      id: s.id,
+      title: s.title,
+      artistName: s.primary_artist?.name ?? null,
+      albumName: s.album?.name ?? null,
+      image: s.song_art_image_url ?? null,
+    };
   })
   .get(
     "/songs/:id/lyrics",
