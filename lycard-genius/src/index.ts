@@ -1,14 +1,18 @@
 import { Elysia, t } from "elysia";
 import { cors } from "@elysiajs/cors";
-import axios from "axios";
 import * as cheerio from "cheerio";
 
-const api = axios.create({
-  baseURL: "https://api.genius.com",
-  headers: {
-    Authorization: `Bearer ${process.env.GENIUS_TOKEN}`,
-  },
-});
+const GENIUS_API = "https://api.genius.com";
+
+async function apiGet(path: string, params?: Record<string, string>) {
+  const url = new URL(`${GENIUS_API}${path}`);
+  if (params) Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
+  const res = await fetch(url.toString(), {
+    headers: { Authorization: `Bearer ${process.env.GENIUS_TOKEN}` },
+  });
+  if (!res.ok) throw new Error(`Genius API error: ${res.status}`);
+  return res.json();
+}
 
 const lyricsCache = new Map<number, string>();
 
@@ -20,7 +24,7 @@ async function scrapeLyrics(
 
   let path = songPath;
   if (!path) {
-    const { data } = await api.get(`/songs/${songId}`);
+    const data = await apiGet(`/songs/${songId}`);
     path = data.response.song.path as string;
   }
 
@@ -79,7 +83,7 @@ async function scrapeLyrics(
 new Elysia()
   .use(cors())
   .get("/search", async ({ query }) => {
-    const { data } = await api.get("/search", { params: { q: query.q } });
+    const data = await apiGet("/search", { q: query.q as string });
     return data.response.hits.map((hit: any) => ({
       id: hit.result.id,
       title: hit.result.title,
