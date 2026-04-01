@@ -563,7 +563,7 @@ export default function CardPage() {
                     </span>
                     <div className="flex gap-2">
                       <button
-                        onClick={() => setSpacedText((s) => (s ? null : SPACED_PRESETS[0]))}
+                        onClick={() => setSpacedText((s) => { if (!s) setLineBar("none"); return s ? null : SPACED_PRESETS[0]; })}
                         className={`flex-1 py-1.5 border-2 border-border font-head text-xs uppercase tracking-widest transition-all ${
                           spacedText
                             ? "bg-black text-white shadow-none translate-y-0.5"
@@ -573,7 +573,7 @@ export default function CardPage() {
                         {spacedText ? t.deactivate : t.activate}
                       </button>
                       <button
-                        onClick={() => setSpacedText(randomFrom(SPACED_PRESETS))}
+                        onClick={() => { setLineBar("none"); setSpacedText(randomFrom(SPACED_PRESETS)); }}
                         className="flex-1 py-1.5 border-2 border-border font-head text-xs uppercase tracking-widest bg-card text-foreground shadow-sm hover:shadow-none hover:translate-y-0.5 transition-all"
                       >
                         {t.randomize}
