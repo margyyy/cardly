@@ -60,7 +60,7 @@ export default function ComingSoon({ children }) {
       </h1>
 
       {phase === "soon" && (
-        <p className="font-head text-xl tracking-widest uppercase text-black/60">
+        <p className="font-head text-xl tracking-widest uppercase text-foreground/60">
           Coming Soon...
         </p>
       )}
@@ -80,7 +80,7 @@ export default function ComingSoon({ children }) {
               >
                 {pad(value)}
               </span>
-              <span className="font-head text-xs uppercase tracking-widest text-black/40">
+              <span className="font-head text-xs uppercase tracking-widest text-foreground/40">
                 {label}
               </span>
             </div>

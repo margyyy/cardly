@@ -36,7 +36,7 @@ function ManualForm() {
   }
 
   return (
-    <Card className="w-full bg-white rounded-none">
+    <Card className="w-full rounded-none">
       <Card.Content>
         <form onSubmit={handleGenerate} className="flex flex-col gap-4 pt-4">
           <div className="flex flex-col gap-1.5">
@@ -46,7 +46,7 @@ function ManualForm() {
               onChange={(e) => setText(e.target.value)}
               placeholder={t.manualLyricsPlaceholder}
               rows={6}
-              className="w-full border-2 border-black px-3 py-2 text-sm font-sans resize-none focus:outline-none focus:ring-0"
+              className="w-full border-2 border-border bg-input text-foreground px-3 py-2 text-sm font-sans resize-none focus:outline-none focus:ring-0"
             />
           </div>
           <Input value={trackName} onChange={(e) => setTrackName(e.target.value)} placeholder={t.manualTrack} />
@@ -73,10 +73,10 @@ function SearchForm({ onSearch, loading }) {
   }
 
   return (
-    <Card className="w-full bg-white rounded-none">
+    <Card className="w-full rounded-none">
       <Card.Header>
         <h1 className="font-head text-3xl tracking-tight">Cardly <span style={{ fontFamily: "Catamaran, sans-serif", fontWeight: 900 }}>"</span></h1>
-        <p className="text-sm text-black/50 mt-1">{t.tagline}</p>
+        <p className="text-sm text-foreground/50 mt-1">{t.tagline}</p>
       </Card.Header>
       <Card.Content>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -91,10 +91,10 @@ function SearchForm({ onSearch, loading }) {
                 key={tp}
                 type="button"
                 onClick={() => setType(tp)}
-                className={`flex-1 py-1.5 border-2 border-black font-head text-xs uppercase tracking-widest transition-all ${
+                className={`flex-1 py-1.5 border-2 border-border font-head text-xs uppercase tracking-widest transition-all ${
                   type === tp
-                    ? "bg-black text-white shadow-none translate-y-0.5"
-                    : "bg-white text-black shadow-sm hover:shadow-none hover:translate-y-0.5"
+                    ? "bg-foreground text-background shadow-none translate-y-0.5"
+                    : "bg-card text-foreground shadow-sm hover:shadow-none hover:translate-y-0.5"
                 }`}
               >
                 {tp === "song" ? t.songs : t.artists}
@@ -106,10 +106,10 @@ function SearchForm({ onSearch, loading }) {
                   key={l}
                   type="button"
                   onClick={() => setLang(l)}
-                  className={`px-2.5 py-1.5 border-2 border-black font-head text-xs uppercase tracking-widest transition-all first:border-r-0 ${
+                  className={`px-2.5 py-1.5 border-2 border-border font-head text-xs uppercase tracking-widest transition-all first:border-r-0 ${
                     lang === l
-                      ? "bg-black text-white shadow-none translate-y-0.5"
-                      : "bg-white text-black shadow-sm hover:shadow-none hover:translate-y-0.5"
+                      ? "bg-foreground text-background shadow-none translate-y-0.5"
+                      : "bg-card text-foreground shadow-sm hover:shadow-none hover:translate-y-0.5"
                   }`}
                 >
                   {l === "en" ? "ENG" : "IT"}
@@ -131,12 +131,12 @@ function SongResults({ songs, onPick }) {
   const { t } = useLang();
   return (
     <div className="flex flex-col gap-3">
-      <p className="font-head text-xs uppercase tracking-widest text-black/40">{t.hintSelectSong}</p>
+      <p className="font-head text-xs uppercase tracking-widest text-foreground/40">{t.hintSelectSong}</p>
       <div className="grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-3">
         {songs.map((song) => (
           <Card
             key={song.id}
-            className="cursor-pointer bg-white rounded-none overflow-hidden hover:translate-x-[2px] hover:translate-y-[2px] transition-transform"
+            className="cursor-pointer rounded-none overflow-hidden hover:translate-x-[2px] hover:translate-y-[2px] transition-transform"
             onClick={() => onPick(song)}
           >
             <img
@@ -165,12 +165,12 @@ function ArtistResults({ artists, onPick }) {
   const { t } = useLang();
   return (
     <div className="flex flex-col gap-3">
-      <p className="font-head text-xs uppercase tracking-widest text-black/40">{t.hintSelectArtist}</p>
+      <p className="font-head text-xs uppercase tracking-widest text-foreground/40">{t.hintSelectArtist}</p>
       <div className="grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-3">
         {artists.map((a) => (
           <Card
             key={a.id}
-            className="cursor-pointer bg-white rounded-none overflow-hidden hover:translate-x-[2px] hover:translate-y-[2px] transition-transform"
+            className="cursor-pointer rounded-none overflow-hidden hover:translate-x-[2px] hover:translate-y-[2px] transition-transform"
             onClick={() => onPick(a)}
           >
             <img
@@ -296,10 +296,10 @@ function HomePage() {
           <button
             key={m}
             onClick={() => setMode(m)}
-            className={`flex-1 py-1.5 border-2 border-black font-head text-xs uppercase tracking-widest transition-all ${
+            className={`flex-1 py-1.5 border-2 border-border font-head text-xs uppercase tracking-widest transition-all ${
               mode === m
-                ? "bg-black text-white shadow-none translate-y-0.5"
-                : "bg-white text-black shadow-sm hover:shadow-none hover:translate-y-0.5"
+                ? "bg-foreground text-background shadow-none translate-y-0.5"
+                : "bg-card text-foreground shadow-sm hover:shadow-none hover:translate-y-0.5"
             } ${m === "manual" ? "border-l-0" : ""}`}
           >
             {m === "search" ? t.searchMode : t.manualMode}
@@ -314,7 +314,7 @@ function HomePage() {
       )}
 
       {mode === "search" && error && (
-        <p className="border-2 border-[--destructive] bg-white px-4 py-3 text-[--destructive] font-head text-sm shadow-md">
+        <p className="border-2 border-[--destructive] bg-card px-4 py-3 text-[--destructive] font-head text-sm shadow-md">
           {error}
         </p>
       )}
@@ -342,14 +342,14 @@ function HomePage() {
           href="https://www.instagram.com/cardlygen"
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-1.5 text-xs text-black/40 hover:text-black transition-colors font-head"
+          className="flex items-center gap-1.5 text-xs text-foreground/40 hover:text-foreground transition-colors font-head"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
           </svg>
           {t.followUs} : cardlygen
         </a>
-        <p className="text-xs text-black/30 text-center">{t.disclaimer}</p>
+        <p className="text-xs text-foreground/30 text-center">{t.disclaimer}</p>
       </div>
     </div>
   );
