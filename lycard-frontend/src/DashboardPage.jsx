@@ -75,7 +75,7 @@ export default function DashboardPage() {
             className="border-2 border-border px-3 py-2 text-sm focus:outline-none bg-input text-foreground"
             autoFocus
           />
-          {error && <p className="text-red-600 text-sm">{error}</p>}
+          {error && <p className="text-destructive text-sm">{error}</p>}
           <button
             type="submit"
             disabled={loading}

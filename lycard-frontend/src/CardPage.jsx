@@ -509,7 +509,7 @@ export default function CardPage() {
                           onClick={() => setTextColor(c)}
                           className={`flex-1 py-1.5 border-2 border-border font-head text-xs uppercase tracking-widest transition-all ${
                             textColor === c
-                              ? "bg-black text-white shadow-none translate-y-0.5"
+                              ? "bg-foreground text-background shadow-none translate-y-0.5"
                               : "bg-card text-foreground shadow-sm hover:shadow-none hover:translate-y-0.5"
                           }`}
                         >
@@ -529,7 +529,7 @@ export default function CardPage() {
                           onClick={() => setLineBar(b)}
                           className={`flex-1 py-1.5 border-2 border-border font-head text-xs uppercase tracking-widest transition-all ${
                             lineBar === b
-                              ? "bg-black text-white shadow-none translate-y-0.5"
+                              ? "bg-foreground text-background shadow-none translate-y-0.5"
                               : "bg-card text-foreground shadow-sm hover:shadow-none hover:translate-y-0.5"
                           }`}
                         >
@@ -566,7 +566,7 @@ export default function CardPage() {
                         onClick={() => setSpacedText((s) => { if (!s) setLineBar("none"); return s ? null : SPACED_PRESETS[0]; })}
                         className={`flex-1 py-1.5 border-2 border-border font-head text-xs uppercase tracking-widest transition-all ${
                           spacedText
-                            ? "bg-black text-white shadow-none translate-y-0.5"
+                            ? "bg-foreground text-background shadow-none translate-y-0.5"
                             : "bg-card text-foreground shadow-sm hover:shadow-none hover:translate-y-0.5"
                         }`}
                       >

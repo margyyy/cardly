@@ -1,11 +1,11 @@
 @import "tailwindcss";
 
 @font-face {
-  font-family: 'Catamaran';
+  font-family: "Catamaran";
   font-style: normal;
   font-weight: 900;
   font-display: block;
-  src: url('/fonts/Catamaran-Black.woff2') format('woff2');
+  src: url("/fonts/Catamaran-Black.woff2") format("woff2");
 }
 
 @theme inline {
@@ -102,10 +102,19 @@
   --ring: #c4a1ff;
 }
 
+::selection {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+}
+
 /* dot grid background */
 html {
   background-color: var(--background);
-  background-image: radial-gradient(circle, var(--dot-color) 1px, transparent 1px);
+  background-image: radial-gradient(
+    circle,
+    var(--dot-color) 1px,
+    transparent 1px
+  );
   background-size: 22px 22px;
   min-height: 100%;
 }

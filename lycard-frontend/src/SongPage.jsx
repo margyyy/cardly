@@ -92,7 +92,7 @@ export default function SongPage() {
         {t.back}
       </Button>
 
-      <Card className="bg-white rounded-none">
+      <Card className="bg-card rounded-none">
         <Card.Header>
           <h1 className="font-head text-2xl tracking-tight">
             {song.trackName}
@@ -111,13 +111,13 @@ export default function SongPage() {
       )}
 
       {errorKey && (
-        <p className="border-2 border-[--destructive] bg-white px-4 py-3 text-[--destructive] font-head text-sm shadow-md">
+        <p className="border-2 border-[--destructive] bg-card px-4 py-3 text-[--destructive] font-head text-sm shadow-md">
           {t[errorKey]}
         </p>
       )}
 
       {!loading && !errorKey && lines.length > 0 && (
-        <p className="font-head text-xs uppercase tracking-widest text-black/40">{t.hintSelectLines}</p>
+        <p className="font-head text-xs uppercase tracking-widest text-foreground/40">{t.hintSelectLines}</p>
       )}
 
       {!loading && !errorKey && lines.length > 0 && (
@@ -134,8 +134,8 @@ export default function SongPage() {
                   border border-transparent transition-all
                   ${
                     selectedLines.has(i)
-                      ? "bg-[#c4b8f0] border-black shadow-xs font-medium translate-x-1"
-                      : "hover:bg-black/5 hover:border-black/20"
+                      ? "bg-primary/70 border-border shadow-xs font-medium translate-x-1"
+                      : "hover:bg-foreground/5 hover:border-foreground/20"
                   }
                 `}
               >
@@ -154,7 +154,7 @@ export default function SongPage() {
 
       {selectedLines.size > 0 && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3">
-          <div className="bg-primary border-2 border-black shadow-md px-4 py-2.5 font-head text-sm whitespace-nowrap pointer-events-none">
+          <div className="bg-primary border-2 border-border shadow-md px-4 py-2.5 font-head text-sm whitespace-nowrap pointer-events-none">
             {t.lineSelected(selectedLines.size)}
           </div>
           <Button
