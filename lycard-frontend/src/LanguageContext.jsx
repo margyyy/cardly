@@ -13,7 +13,7 @@ const translations = {
     loadMore: "Load more",
     noResults: "No results found.",
     searchFailed:
-      "Search failed. Check console for details or make sure the backend is running & Genius token is valid.",
+      "Search failed. Please try again later.",
     noLyrics: "No lyrics found for this song.",
     lineSelected: (n) => `${n} line${n !== 1 ? "s" : ""} selected`,
     generate: "Generate →",
