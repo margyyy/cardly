@@ -407,9 +407,9 @@ export default function CardPage() {
           <div className="w-full max-w-[340px] flex flex-col gap-2">
 
             {/* Change Style */}
-            <div className="border-2 border-black bg-white">
+            <div className="border-2 border-border bg-card">
               <button
-                className="w-full flex items-center justify-between px-4 py-2.5 font-head text-sm uppercase tracking-widest hover:bg-black/5 transition-colors"
+                className="w-full flex items-center justify-between px-4 py-2.5 font-head text-sm uppercase tracking-widest hover:bg-foreground/5 transition-colors"
                 onClick={() =>
                   setOpenPanel((p) => (p === "style" ? null : "style"))
                 }
@@ -423,10 +423,10 @@ export default function CardPage() {
                     <button
                       key={s}
                       onClick={() => setCardStyle(s)}
-                      className={`flex-1 py-1.5 border-2 border-black font-head text-xs uppercase tracking-widest transition-all ${
+                      className={`flex-1 py-1.5 border-2 border-border font-head text-xs uppercase tracking-widest transition-all ${
                         cardStyle === s
-                          ? "bg-black text-white shadow-none translate-y-0.5"
-                          : "bg-white text-black shadow-sm hover:shadow-none hover:translate-y-0.5"
+                          ? "bg-foreground text-background shadow-none translate-y-0.5"
+                          : "bg-card text-foreground shadow-sm hover:shadow-none hover:translate-y-0.5"
                       }`}
                     >
                       {s === "portrait" ? t.stylePortrait : s === "fourfive" ? t.styleFourFive : t.styleSquare}
@@ -437,9 +437,9 @@ export default function CardPage() {
             </div>
 
             {/* Edit Background */}
-            <div className="border-2 border-black bg-white">
+            <div className="border-2 border-border bg-card">
               <button
-                className="w-full flex items-center justify-between px-4 py-2.5 font-head text-sm uppercase tracking-widest hover:bg-black/5 transition-colors"
+                className="w-full flex items-center justify-between px-4 py-2.5 font-head text-sm uppercase tracking-widest hover:bg-foreground/5 transition-colors"
                 onClick={() => setOpenPanel((p) => (p === "bg" ? null : "bg"))}
               >
                 {t.editBackground}
@@ -447,7 +447,7 @@ export default function CardPage() {
               </button>
               {openPanel === "bg" && (
                 <div className="flex flex-col gap-2 px-4 pb-4 pt-1">
-                  <label className="w-full flex items-center justify-center gap-2 border-2 border-black border-dashed px-4 py-2.5 cursor-pointer font-head text-sm shadow-sm hover:shadow-none hover:translate-y-0.5 transition-all bg-white">
+                  <label className="w-full flex items-center justify-center gap-2 border-2 border-border border-dashed px-4 py-2.5 cursor-pointer font-head text-sm shadow-sm hover:shadow-none hover:translate-y-0.5 transition-all bg-card text-foreground">
                     {bgUrl ? t.changeBackground : t.uploadBackground}
                     <input
                       type="file"
@@ -474,9 +474,9 @@ export default function CardPage() {
             </div>
 
             {/* Edit Text */}
-            <div className="border-2 border-black bg-white">
+            <div className="border-2 border-border bg-card">
               <button
-                className="w-full flex items-center justify-between px-4 py-2.5 font-head text-sm uppercase tracking-widest hover:bg-black/5 transition-colors"
+                className="w-full flex items-center justify-between px-4 py-2.5 font-head text-sm uppercase tracking-widest hover:bg-foreground/5 transition-colors"
                 onClick={() =>
                   setOpenPanel((p) => (p === "text" ? null : "text"))
                 }
@@ -507,10 +507,10 @@ export default function CardPage() {
                         <button
                           key={c}
                           onClick={() => setTextColor(c)}
-                          className={`flex-1 py-1.5 border-2 border-black font-head text-xs uppercase tracking-widest transition-all ${
+                          className={`flex-1 py-1.5 border-2 border-border font-head text-xs uppercase tracking-widest transition-all ${
                             textColor === c
                               ? "bg-black text-white shadow-none translate-y-0.5"
-                              : "bg-white text-black shadow-sm hover:shadow-none hover:translate-y-0.5"
+                              : "bg-card text-foreground shadow-sm hover:shadow-none hover:translate-y-0.5"
                           }`}
                         >
                           {c === "white" ? t.colorWhite : t.colorBlack}
@@ -527,10 +527,10 @@ export default function CardPage() {
                         <button
                           key={b}
                           onClick={() => setLineBar(b)}
-                          className={`flex-1 py-1.5 border-2 border-black font-head text-xs uppercase tracking-widest transition-all ${
+                          className={`flex-1 py-1.5 border-2 border-border font-head text-xs uppercase tracking-widest transition-all ${
                             lineBar === b
                               ? "bg-black text-white shadow-none translate-y-0.5"
-                              : "bg-white text-black shadow-sm hover:shadow-none hover:translate-y-0.5"
+                              : "bg-card text-foreground shadow-sm hover:shadow-none hover:translate-y-0.5"
                           }`}
                         >
                           {b === "none"
@@ -559,22 +559,22 @@ export default function CardPage() {
                   <div className="flex flex-col gap-1.5">
                     <span className="font-head text-xs uppercase tracking-widest flex items-center gap-2">
                       {t.spacedText}
-                      {spacedText && <span className="w-1.5 h-1.5 rounded-full bg-black inline-block" />}
+                      {spacedText && <span className="w-1.5 h-1.5 rounded-full bg-foreground inline-block" />}
                     </span>
                     <div className="flex gap-2">
                       <button
                         onClick={() => setSpacedText((s) => (s ? null : SPACED_PRESETS[0]))}
-                        className={`flex-1 py-1.5 border-2 border-black font-head text-xs uppercase tracking-widest transition-all ${
+                        className={`flex-1 py-1.5 border-2 border-border font-head text-xs uppercase tracking-widest transition-all ${
                           spacedText
                             ? "bg-black text-white shadow-none translate-y-0.5"
-                            : "bg-white text-black shadow-sm hover:shadow-none hover:translate-y-0.5"
+                            : "bg-card text-foreground shadow-sm hover:shadow-none hover:translate-y-0.5"
                         }`}
                       >
                         {spacedText ? t.deactivate : t.activate}
                       </button>
                       <button
                         onClick={() => setSpacedText(randomFrom(SPACED_PRESETS))}
-                        className="flex-1 py-1.5 border-2 border-black font-head text-xs uppercase tracking-widest bg-white text-black shadow-sm hover:shadow-none hover:translate-y-0.5 transition-all"
+                        className="flex-1 py-1.5 border-2 border-border font-head text-xs uppercase tracking-widest bg-card text-foreground shadow-sm hover:shadow-none hover:translate-y-0.5 transition-all"
                       >
                         {t.randomize}
                       </button>
