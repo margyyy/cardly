@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Routes, Route, useNavigate } from "react-router-dom";
+import { Routes, Route, useNavigate, Navigate } from "react-router-dom";
 import "./App.css";
 import { Button } from "@/components/retroui/Button";
 import { Card } from "@/components/retroui/Card";
@@ -362,6 +362,8 @@ export default function App() {
       <Route path="/song/:id" element={<SongPage />} />
       <Route path="/card" element={<CardPage />} />
       <Route path="/dashboard" element={<DashboardPage />} />
+      <Route path="/margyyy" element={<Navigate to="/" replace />} />
+      <Route path="/margyyy/*" element={<Navigate to="/" replace />} />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );

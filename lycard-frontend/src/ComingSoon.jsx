@@ -24,6 +24,17 @@ function getRemaining() {
   return { days, hours, minutes, seconds };
 }
 
+const BYPASS_KEY = "_cardly_admin";
+
+function isBypassed() {
+  if (typeof window === "undefined") return false;
+  if (window.location.pathname.startsWith("/margyyy")) {
+    localStorage.setItem(BYPASS_KEY, "1");
+    return true;
+  }
+  return localStorage.getItem(BYPASS_KEY) === "1";
+}
+
 export default function ComingSoon({ children }) {
   const [phase, setPhase]       = useState(getPhase);
   const [remaining, setRemaining] = useState(getRemaining);
@@ -36,6 +47,7 @@ export default function ComingSoon({ children }) {
     return () => clearInterval(id);
   }, []);
 
+  if (isBypassed()) return children;
   if (phase === "open") return children;
 
   return (
