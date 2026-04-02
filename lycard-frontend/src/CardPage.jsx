@@ -71,7 +71,7 @@ function LyricLines({ lines, fontSize, textColor, lineBar, lineBarOpacity, space
 }
 
 // ── Shared: background layers ─────────────────────────────────────
-function CardBackground({ activeBg, bgUrl, transform, isResizing }) {
+function CardBackground({ activeBg, bgUrl, bgColor, transform, isResizing }) {
   return (
     <>
       {activeBg && bgUrl ? (
@@ -88,6 +88,11 @@ function CardBackground({ activeBg, bgUrl, transform, isResizing }) {
           />
           <div className="absolute inset-0 bg-black/40 pointer-events-none" />
         </>
+      ) : bgColor ? (
+        <div
+          className="absolute inset-0"
+          style={{ background: bgColor }}
+        />
       ) : (
         <div
           className="absolute inset-0"
@@ -113,6 +118,7 @@ export default function CardPage() {
   const lines = state?.lines ?? queryData?.lines ?? [];
 
   const [bgUrl, setBgUrl] = useState(null);
+  const [bgColor, setBgColor] = useState(null);
   const [fontSize, setFontSize] = useState(14);
   const [textColor, setTextColor] = useState("white");
   const [lineBar, setLineBar] = useState("none");
@@ -288,6 +294,7 @@ export default function CardPage() {
           <CardBackground
             activeBg={activeBg}
             bgUrl={bgUrl}
+            bgColor={bgColor}
             transform={transform}
             isResizing={isResizing}
           />
@@ -468,6 +475,28 @@ export default function CardPage() {
                     >
                       {t.edit}
                     </Button>
+                  )}
+                  <label className="w-full flex items-center justify-between gap-3 border-2 border-border px-4 py-2.5 cursor-pointer font-head text-sm bg-card text-foreground">
+                    <span>{t.bgColor}</span>
+                    <input
+                      type="color"
+                      value={bgColor ?? "#1a1025"}
+                      className="w-8 h-8 cursor-pointer border-0 bg-transparent p-0"
+                      onChange={(e) => {
+                        setBgColor(e.target.value);
+                        setBgUrl(null);
+                        setConfirmedTransform(null);
+                        setIsResizing(false);
+                      }}
+                    />
+                  </label>
+                  {bgColor && (
+                    <button
+                      className="w-full py-1.5 border-2 border-border font-head text-xs uppercase tracking-widest bg-card text-foreground shadow-sm hover:shadow-none hover:translate-y-0.5 transition-all"
+                      onClick={() => setBgColor(null)}
+                    >
+                      {t.cancel}
+                    </button>
                   )}
                 </div>
               )}
