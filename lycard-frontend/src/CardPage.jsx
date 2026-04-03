@@ -1,5 +1,4 @@
 import { useRef, useState, useCallback } from "react";
-import { flushSync } from "react-dom";
 import { domToPng } from "modern-screenshot";
 
 import { useLocation, useNavigate } from "react-router-dom";
@@ -142,7 +141,6 @@ export default function CardPage() {
   const [spacedText, setSpacedText] = useState(null);
   const [theme, setTheme] = useState("cardly");
   const [showQuote, setShowQuote] = useState(true);
-  const [isExporting, setIsExporting] = useState(false);
   const prevTransform = useRef(null);
 
   const dragging = useRef(false);
@@ -232,9 +230,6 @@ export default function CardPage() {
     try {
       await document.fonts.ready;
 
-      // Reduce blur before screenshot so scale:3 doesn't amplify it
-      flushSync(() => setIsExporting(true));
-
       const { width, height } = cardRef.current.getBoundingClientRect();
       const fontRules = Array.from(document.styleSheets)
         .flatMap((sheet) => {
@@ -261,8 +256,6 @@ export default function CardPage() {
         },
       });
 
-      setIsExporting(false);
-
       const fileName = `${song.trackName} — ${song.artistName}.png`;
       const blob = await fetch(dataUrl).then((r) => r.blob());
       const file = new File([blob], fileName, { type: "image/png" });
@@ -278,7 +271,6 @@ export default function CardPage() {
         URL.revokeObjectURL(blobUrl);
       }
     } catch (err) {
-      setIsExporting(false);
       alert("Errore: " + err.message);
     }
   }
@@ -288,7 +280,8 @@ export default function CardPage() {
   const isBrat = theme === "brattify";
   const bratStyle = isBrat ? { backgroundColor: "#8ACF00", borderColor: "#8ACF00", color: "#000000" } : {};
   const EXPORT_SCALE = 3;
-  const bratBlur = isExporting ? 0.8 / EXPORT_SCALE : 0.8;
+  // blur is pre-divided by scale so domToPng at 3x renders it as the intended 0.8px
+  const bratBlur = 0.8 / EXPORT_SCALE;
 
   return (
     <div className="w-full max-w-4xl px-6 py-10 flex flex-col gap-6">
