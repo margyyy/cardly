@@ -125,7 +125,13 @@ function setCookieHeader() {
 }
 
 new Elysia()
-  .use(cors({ origin: FRONTEND_URL }))
+  .use(cors({
+    origin: (request) => {
+      const origin = request.headers.get("origin") ?? "";
+      const allowed = FRONTEND_URL.split(",").map((s) => s.trim());
+      return allowed.some((o) => origin === o || origin.endsWith(".vercel.app"));
+    },
+  }))
 
   // ── Public: search & lyrics ──────────────────────────────────────
   .get("/search", async ({ query }) => {
