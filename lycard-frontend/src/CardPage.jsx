@@ -142,6 +142,8 @@ export default function CardPage() {
   const [spacedText, setSpacedText] = useState(null);
   const [theme, setTheme] = useState("cardly");
   const [showQuote, setShowQuote] = useState(true);
+  const [showInstaBanner, setShowInstaBanner] = useState(true);
+  const isInstagram = /Instagram/.test(navigator.userAgent);
   const prevTransform = useRef(null);
 
   const dragging = useRef(false);
@@ -214,6 +216,9 @@ export default function CardPage() {
   const activeBg = isResizing || confirmedTransform;
 
   async function handleDownload() {
+    // Open new tab immediately (before await) to keep user-gesture context
+    const newTab = window.open("", "_blank");
+
     // fire-and-forget analytics
     try {
       fetch(`${import.meta.env.VITE_API_URL}/track`, {
@@ -260,18 +265,26 @@ export default function CardPage() {
       const fileName = `${song.trackName} — ${song.artistName}.png`;
       const blob = await fetch(dataUrl).then((r) => r.blob());
       const file = new File([blob], fileName, { type: "image/png" });
+      const blobUrl = URL.createObjectURL(blob);
 
+      // Load image in new tab — user can long-press to save on mobile
+      if (newTab) {
+        newTab.location.href = blobUrl;
+      }
+
+      // Also try native share or <a download> fallback
       if (navigator.canShare?.({ files: [file] })) {
         await navigator.share({ files: [file] });
-      } else {
-        const blobUrl = URL.createObjectURL(blob);
+      } else if (!newTab) {
         const link = document.createElement("a");
         link.href = blobUrl;
         link.download = fileName;
         link.click();
-        URL.revokeObjectURL(blobUrl);
       }
+
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
     } catch (err) {
+      if (newTab) newTab.close();
       alert("Errore: " + err.message);
     }
   }
@@ -295,6 +308,18 @@ export default function CardPage() {
       >
         {t.back}
       </Button>
+
+      {isInstagram && showInstaBanner && (
+        <div className="flex items-start gap-3 border-2 border-border bg-card px-4 py-3 text-sm font-sans">
+          <span className="flex-1">{t.instaBanner}</span>
+          <button
+            className="font-head text-foreground/50 hover:text-foreground leading-none mt-0.5"
+            onClick={() => setShowInstaBanner(false)}
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       <div className="flex flex-col items-center gap-8">
         {/* ── Card ── */}

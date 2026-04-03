@@ -61,6 +61,7 @@ const translations = {
     hintSelectSong: "Select a song to view its lyrics",
     hintSelectArtist: "Select an artist to browse their songs",
     hintSelectLines: "Tap lines to select them, then generate your card",
+    instaBanner: "You're using Instagram's browser — downloads may not work. Open this page in Safari or Chrome, or long-press the image that opens to save it.",
   },
   it: {
     tagline: "Trasforma i tuoi testi preferiti in card da condividere",
@@ -123,6 +124,7 @@ const translations = {
     hintSelectSong: "Seleziona una canzone per vedere il testo",
     hintSelectArtist: "Seleziona un artista per vedere le sue canzoni",
     hintSelectLines: "Tocca le righe per selezionarle, poi genera la card",
+    instaBanner: "Stai usando il browser di Instagram — il download potrebbe non funzionare. Apri questa pagina in Safari o Chrome, oppure tieni premuta l'immagine che si apre per salvarla.",
   },
 };
 
