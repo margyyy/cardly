@@ -229,6 +229,18 @@ export default function CardPage() {
 
     try {
       await document.fonts.ready;
+      const exportScale = 3;
+
+      // CSS blur gets multiplied by scale factor during export — compensate
+      const blurredEls = cardRef.current.querySelectorAll('[style*="blur"]');
+      const savedFilters = Array.from(blurredEls).map((el) => el.style.filter);
+      blurredEls.forEach((el) => {
+        el.style.filter = el.style.filter.replace(
+          /blur\(([0-9.]+)px\)/,
+          (_, v) => `blur(${parseFloat(v) / exportScale}px)`,
+        );
+      });
+
       const { width, height } = cardRef.current.getBoundingClientRect();
       const fontRules = Array.from(document.styleSheets)
         .flatMap((sheet) => {
@@ -242,7 +254,7 @@ export default function CardPage() {
         .map((r) => r.cssText)
         .join("\n");
       const dataUrl = await domToPng(cardRef.current, {
-        scale: 3,
+        scale: exportScale,
         width,
         height,
         fixSvgXmlDecode: true,
@@ -254,6 +266,9 @@ export default function CardPage() {
           }
         },
       });
+
+      // Restore original blur values
+      blurredEls.forEach((el, i) => { el.style.filter = savedFilters[i]; });
 
       const fileName = `${song.trackName} — ${song.artistName}.png`;
       const blob = await fetch(dataUrl).then((r) => r.blob());
@@ -658,7 +673,7 @@ export default function CardPage() {
                       </div>
                     )}
                   </div>
-                  <div className="flex flex-col gap-1.5">
+                  <div className={`flex flex-col gap-1.5 ${isBrat ? "opacity-30 pointer-events-none select-none" : ""}`}>
                     <span className="font-head text-xs uppercase tracking-widest flex items-center gap-2">
                       {t.spacedText}
                       {spacedText && <span className="w-1.5 h-1.5 rounded-full bg-foreground inline-block" />}
@@ -675,10 +690,8 @@ export default function CardPage() {
                         {spacedText ? t.deactivate : t.activate}
                       </button>
                       <button
-                        onClick={() => { if (!isBrat) { setLineBar("none"); setSpacedText(randomFrom(SPACED_PRESETS)); } }}
-                        className={`flex-1 py-1.5 border-2 border-border font-head text-xs uppercase tracking-widest bg-card text-foreground transition-all ${
-                          isBrat ? "opacity-30 cursor-not-allowed" : "shadow-sm hover:shadow-none hover:translate-y-0.5"
-                        }`}
+                        onClick={() => { setLineBar("none"); setSpacedText(randomFrom(SPACED_PRESETS)); }}
+                        className="flex-1 py-1.5 border-2 border-border font-head text-xs uppercase tracking-widest bg-card text-foreground shadow-sm hover:shadow-none hover:translate-y-0.5 transition-all"
                       >
                         {t.randomize}
                       </button>
