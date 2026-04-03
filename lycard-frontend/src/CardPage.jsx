@@ -43,7 +43,7 @@ function LyricLines({ lines, fontSize, textColor, lineBar, lineBarOpacity, space
       style={{
         fontFamily: THEME_FONT[theme] ?? THEME_FONT.cardly,
         fontWeight: isBrat ? 500 : undefined,
-        filter: isBrat ? "blur(2px)" : undefined,
+        filter: isBrat ? "blur(0.8px)" : undefined,
         textAlign: isBrat ? "justify" : "left",
         textAlignLast: isBrat ? "justify" : undefined,
         fontSize: `${fontSize}px`,
@@ -140,6 +140,7 @@ export default function CardPage() {
   const [cardStyle, setCardStyle] = useState("portrait"); // "portrait" | "square"
   const [spacedText, setSpacedText] = useState(null);
   const [theme, setTheme] = useState("cardly");
+  const [showQuote, setShowQuote] = useState(true);
   const prevTransform = useRef(null);
 
   const dragging = useRef(false);
@@ -275,6 +276,8 @@ export default function CardPage() {
 
   const isPortrait = cardStyle === "portrait";
   const isFourFive = cardStyle === "fourfive";
+  const isBrat = theme === "brattify";
+  const bratStyle = isBrat ? { backgroundColor: "#8ACF00", borderColor: "#8ACF00", color: "#000000" } : {};
 
   return (
     <div className="w-full max-w-4xl px-6 py-10 flex flex-col gap-6">
@@ -282,6 +285,7 @@ export default function CardPage() {
         variant="default"
         size="sm"
         className="self-start"
+        style={bratStyle}
         onClick={() => navigate(-1)}
       >
         {t.back}
@@ -311,17 +315,19 @@ export default function CardPage() {
           />
 
           {/* quote mark top-left */}
-          <span
-            className="absolute top-5 left-6 text-white/30 select-none pointer-events-none"
-            style={{
-              fontFamily: "'Catamaran', sans-serif",
-              fontWeight: 900,
-              fontSize: isPortrait ? "80px" : "64px",
-              lineHeight: 1,
-            }}
-          >
-            "
-          </span>
+          {showQuote && (
+            <span
+              className="absolute top-5 left-6 text-white/30 select-none pointer-events-none"
+              style={{
+                fontFamily: "'Catamaran', sans-serif",
+                fontWeight: 900,
+                fontSize: isPortrait ? "80px" : "64px",
+                lineHeight: 1,
+              }}
+            >
+              "
+            </span>
+          )}
 
           {/* lyrics — centered in safe zone (below quote, above bottom bar) */}
           <div
@@ -347,7 +353,9 @@ export default function CardPage() {
           <div
             className="absolute bottom-0 left-0 right-0 px-6 py-4 pointer-events-none"
             style={{
-              background: "linear-gradient(to top, rgba(0,0,0,0.72) 0%, transparent 100%)",
+              background: bgColor && !activeBg
+                ? "transparent"
+                : "linear-gradient(to top, rgba(0,0,0,0.72) 0%, transparent 100%)",
             }}
           >
             <p
@@ -468,23 +476,32 @@ export default function CardPage() {
               </button>
               {openPanel === "theme" && (
                 <div className="flex gap-2 px-4 pb-4 pt-1">
-                  {["cardly", "brattify"].map((th) => (
-                    <button
-                      key={th}
-                      onClick={() => setTheme(th)}
-                      style={{
-                        fontFamily: THEME_FONT[th],
-                        filter: th === "brattify" && theme !== "brattify" ? "blur(0.5px)" : undefined,
-                      }}
-                      className={`flex-1 py-1.5 border-2 border-border text-sm transition-all ${
-                        theme === th
-                          ? "bg-foreground text-background shadow-none translate-y-0.5"
-                          : "bg-card text-foreground shadow-sm hover:shadow-none hover:translate-y-0.5"
-                      }`}
-                    >
-                      {th}
-                    </button>
-                  ))}
+                  {["cardly", "brattify"].map((th) => {
+                    const isActive = theme === th;
+                    const isBratBtn = th === "brattify";
+                    return (
+                      <button
+                        key={th}
+                        onClick={() => setTheme(th)}
+                        style={{
+                          fontFamily: THEME_FONT[th],
+                          filter: isBratBtn && !isActive ? "blur(0.5px)" : undefined,
+                          backgroundColor: isBratBtn && isActive ? "#8ACF00" : undefined,
+                          borderColor: isBratBtn && isActive ? "#8ACF00" : undefined,
+                          color: isBratBtn && isActive ? "#000000" : undefined,
+                        }}
+                        className={`flex-1 py-1.5 border-2 border-border text-sm transition-all ${
+                          isActive && !isBratBtn
+                            ? "bg-foreground text-background shadow-none translate-y-0.5"
+                            : !isActive
+                            ? "bg-card text-foreground shadow-sm hover:shadow-none hover:translate-y-0.5"
+                            : "shadow-none translate-y-0.5"
+                        }`}
+                      >
+                        {th}
+                      </button>
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -544,6 +561,16 @@ export default function CardPage() {
                       {t.cancel}
                     </button>
                   )}
+                  <button
+                    className={`w-full py-1.5 border-2 border-border font-head text-xs uppercase tracking-widest transition-all ${
+                      !showQuote
+                        ? "bg-foreground text-background shadow-none translate-y-0.5"
+                        : "bg-card text-foreground shadow-sm hover:shadow-none hover:translate-y-0.5"
+                    }`}
+                    onClick={() => setShowQuote((q) => !q)}
+                  >
+                    {t.removeWatermark}
+                  </button>
                 </div>
               )}
             </div>
@@ -648,8 +675,10 @@ export default function CardPage() {
                         {spacedText ? t.deactivate : t.activate}
                       </button>
                       <button
-                        onClick={() => { setLineBar("none"); setSpacedText(randomFrom(SPACED_PRESETS)); }}
-                        className="flex-1 py-1.5 border-2 border-border font-head text-xs uppercase tracking-widest bg-card text-foreground shadow-sm hover:shadow-none hover:translate-y-0.5 transition-all"
+                        onClick={() => { if (!isBrat) { setLineBar("none"); setSpacedText(randomFrom(SPACED_PRESETS)); } }}
+                        className={`flex-1 py-1.5 border-2 border-border font-head text-xs uppercase tracking-widest bg-card text-foreground transition-all ${
+                          isBrat ? "opacity-30 cursor-not-allowed" : "shadow-sm hover:shadow-none hover:translate-y-0.5"
+                        }`}
                       >
                         {t.randomize}
                       </button>
@@ -660,9 +689,10 @@ export default function CardPage() {
             </div>
 
             <Button
-              variant="secondary"
+              variant="default"
               size="sm"
               className="w-full"
+              style={bratStyle}
               onClick={handleDownload}
             >
               {t.downloadPng}
