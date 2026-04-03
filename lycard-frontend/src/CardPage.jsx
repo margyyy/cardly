@@ -29,18 +29,20 @@ function parseQueryData(search) {
 }
 
 // ── Shared: lyrics lines renderer ────────────────────────────────
-const FONTS = {
-  "archivo-black": "'Archivo Black', sans-serif",
-  "arial-narrow":  "'Arial Narrow', 'Arial', sans-serif",
+const THEME_FONT = {
+  cardly:    "'Archivo Black', sans-serif",
+  brattify:  "'Arial Narrow', Arial, sans-serif",
 };
 
-function LyricLines({ lines, fontSize, textColor, lineBar, lineBarOpacity, spacedText, font }) {
+function LyricLines({ lines, fontSize, textColor, lineBar, lineBarOpacity, spacedText, theme }) {
+  const isBrat = theme === "brattify";
   return lines.map((line, i) => (
     <p
       key={i}
       className="text-left leading-snug"
       style={{
-        fontFamily: FONTS[font] ?? FONTS["archivo-black"],
+        fontFamily: THEME_FONT[theme] ?? THEME_FONT.cardly,
+        filter: isBrat ? "blur(0.8px)" : undefined,
         fontSize: `${fontSize}px`,
         color: textColor === "white" ? "#ffffff" : "#000000",
         width: "100%",
@@ -134,7 +136,7 @@ export default function CardPage() {
   const [confirmedTransform, setConfirmedTransform] = useState(null);
   const [cardStyle, setCardStyle] = useState("portrait"); // "portrait" | "square"
   const [spacedText, setSpacedText] = useState(null);
-  const [font, setFont] = useState("archivo-black");
+  const [theme, setTheme] = useState("cardly");
   const prevTransform = useRef(null);
 
   const dragging = useRef(false);
@@ -334,7 +336,7 @@ export default function CardPage() {
               lineBar={lineBar}
               lineBarOpacity={lineBarOpacity}
               spacedText={spacedText}
-              font={font}
+              theme={theme}
             />
           </div>
 
@@ -348,8 +350,9 @@ export default function CardPage() {
             <p
               className="text-white leading-tight"
               style={{
-                fontFamily: "'Archivo Black', sans-serif",
+                fontFamily: THEME_FONT[theme],
                 fontSize: isPortrait ? "13px" : "12px",
+                filter: theme === "brattify" ? "blur(0.6px)" : undefined,
               }}
             >
               {song.trackName}
@@ -357,8 +360,9 @@ export default function CardPage() {
             <p
               className="text-white/60 mt-0.5"
               style={{
-                fontFamily: "'Archivo Black', sans-serif",
+                fontFamily: THEME_FONT[theme],
                 fontSize: isPortrait ? "11px" : "10px",
+                filter: theme === "brattify" ? "blur(0.6px)" : undefined,
               }}
             >
               {song.artistName}
@@ -366,7 +370,7 @@ export default function CardPage() {
             {isPortrait && song.albumName && (
               <p
                 className="text-white/40 text-xs absolute bottom-4 right-6"
-                style={{ fontFamily: "'Archivo Black', sans-serif" }}
+                style={{ fontFamily: THEME_FONT[theme] }}
               >
                 {song.albumName}
               </p>
@@ -450,6 +454,38 @@ export default function CardPage() {
               )}
             </div>
 
+            {/* Style (cardly / brattify) */}
+            <div className="border-2 border-border bg-card">
+              <button
+                className="w-full flex items-center justify-between px-4 py-2.5 font-head text-sm uppercase tracking-widest hover:bg-foreground/5 transition-colors"
+                onClick={() => setOpenPanel((p) => (p === "theme" ? null : "theme"))}
+              >
+                {t.editStyle}
+                <span>{openPanel === "theme" ? "▲" : "▼"}</span>
+              </button>
+              {openPanel === "theme" && (
+                <div className="flex gap-2 px-4 pb-4 pt-1">
+                  {["cardly", "brattify"].map((th) => (
+                    <button
+                      key={th}
+                      onClick={() => setTheme(th)}
+                      style={{
+                        fontFamily: THEME_FONT[th],
+                        filter: th === "brattify" && theme !== "brattify" ? "blur(0.5px)" : undefined,
+                      }}
+                      className={`flex-1 py-1.5 border-2 border-border text-sm transition-all ${
+                        theme === th
+                          ? "bg-foreground text-background shadow-none translate-y-0.5"
+                          : "bg-card text-foreground shadow-sm hover:shadow-none hover:translate-y-0.5"
+                      }`}
+                    >
+                      {th}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
             {/* Edit Background */}
             <div className="border-2 border-border bg-card">
               <button
@@ -522,28 +558,6 @@ export default function CardPage() {
               </button>
               {openPanel === "text" && (
                 <div className="flex flex-col gap-3 px-4 pb-4 pt-1">
-                  <div className="flex flex-col gap-1.5">
-                    <span className="font-head text-xs uppercase tracking-widest">{t.font}</span>
-                    <div className="flex gap-2">
-                      {[
-                        { key: "archivo-black", label: "Archivo Black" },
-                        { key: "arial-narrow",  label: "Arial Narrow" },
-                      ].map(({ key, label }) => (
-                        <button
-                          key={key}
-                          onClick={() => setFont(key)}
-                          style={{ fontFamily: FONTS[key] }}
-                          className={`flex-1 py-1.5 border-2 border-border text-xs transition-all ${
-                            font === key
-                              ? "bg-foreground text-background shadow-none translate-y-0.5"
-                              : "bg-card text-foreground shadow-sm hover:shadow-none hover:translate-y-0.5"
-                          }`}
-                        >
-                          {label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
                   <div className="flex flex-col gap-1">
                     <label className="font-head text-xs uppercase tracking-widest">
                       {t.fontSize} — {fontSize}px
