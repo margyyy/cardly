@@ -1,4 +1,5 @@
 import { useRef, useState, useCallback } from "react";
+import { flushSync } from "react-dom";
 import { domToPng } from "modern-screenshot";
 
 import { useLocation, useNavigate } from "react-router-dom";
@@ -34,7 +35,7 @@ const THEME_FONT = {
   brattify:  "'Arial Narrow', Arial, sans-serif",
 };
 
-function LyricLines({ lines, fontSize, textColor, lineBar, lineBarOpacity, spacedText, theme }) {
+function LyricLines({ lines, fontSize, textColor, lineBar, lineBarOpacity, spacedText, theme, bratBlur }) {
   const isBrat = theme === "brattify";
   return lines.map((line, i) => (
     <p
@@ -43,7 +44,7 @@ function LyricLines({ lines, fontSize, textColor, lineBar, lineBarOpacity, space
       style={{
         fontFamily: THEME_FONT[theme] ?? THEME_FONT.cardly,
         fontWeight: isBrat ? 500 : undefined,
-        filter: isBrat ? "blur(0.8px)" : undefined,
+        filter: isBrat ? `blur(${bratBlur}px)` : undefined,
         textAlign: isBrat ? "justify" : "left",
         textAlignLast: isBrat ? "justify" : undefined,
         fontSize: `${fontSize}px`,
@@ -141,6 +142,7 @@ export default function CardPage() {
   const [spacedText, setSpacedText] = useState(null);
   const [theme, setTheme] = useState("cardly");
   const [showQuote, setShowQuote] = useState(true);
+  const [isExporting, setIsExporting] = useState(false);
   const prevTransform = useRef(null);
 
   const dragging = useRef(false);
@@ -229,17 +231,9 @@ export default function CardPage() {
 
     try {
       await document.fonts.ready;
-      const exportScale = 3;
 
-      // CSS blur gets multiplied by scale factor during export — compensate
-      const blurredEls = cardRef.current.querySelectorAll('[style*="blur"]');
-      const savedFilters = Array.from(blurredEls).map((el) => el.style.filter);
-      blurredEls.forEach((el) => {
-        el.style.filter = el.style.filter.replace(
-          /blur\(([0-9.]+)px\)/,
-          (_, v) => `blur(${parseFloat(v) / exportScale}px)`,
-        );
-      });
+      // Reduce blur before screenshot so scale:3 doesn't amplify it
+      flushSync(() => setIsExporting(true));
 
       const { width, height } = cardRef.current.getBoundingClientRect();
       const fontRules = Array.from(document.styleSheets)
@@ -254,7 +248,7 @@ export default function CardPage() {
         .map((r) => r.cssText)
         .join("\n");
       const dataUrl = await domToPng(cardRef.current, {
-        scale: exportScale,
+        scale: EXPORT_SCALE,
         width,
         height,
         fixSvgXmlDecode: true,
@@ -267,8 +261,7 @@ export default function CardPage() {
         },
       });
 
-      // Restore original blur values
-      blurredEls.forEach((el, i) => { el.style.filter = savedFilters[i]; });
+      setIsExporting(false);
 
       const fileName = `${song.trackName} — ${song.artistName}.png`;
       const blob = await fetch(dataUrl).then((r) => r.blob());
@@ -285,6 +278,7 @@ export default function CardPage() {
         URL.revokeObjectURL(blobUrl);
       }
     } catch (err) {
+      setIsExporting(false);
       alert("Errore: " + err.message);
     }
   }
@@ -293,6 +287,8 @@ export default function CardPage() {
   const isFourFive = cardStyle === "fourfive";
   const isBrat = theme === "brattify";
   const bratStyle = isBrat ? { backgroundColor: "#8ACF00", borderColor: "#8ACF00", color: "#000000" } : {};
+  const EXPORT_SCALE = 3;
+  const bratBlur = isExporting ? 0.8 / EXPORT_SCALE : 0.8;
 
   return (
     <div className="w-full max-w-4xl px-6 py-10 flex flex-col gap-6">
@@ -361,6 +357,7 @@ export default function CardPage() {
               lineBarOpacity={lineBarOpacity}
               spacedText={spacedText}
               theme={theme}
+              bratBlur={bratBlur}
             />
           </div>
 
@@ -378,7 +375,7 @@ export default function CardPage() {
               style={{
                 fontFamily: THEME_FONT[theme],
                 fontSize: isPortrait ? "13px" : "12px",
-                filter: theme === "brattify" ? "blur(0.6px)" : undefined,
+                filter: isBrat ? `blur(${bratBlur * 0.75}px)` : undefined,
               }}
             >
               {song.trackName}
@@ -388,7 +385,7 @@ export default function CardPage() {
               style={{
                 fontFamily: THEME_FONT[theme],
                 fontSize: isPortrait ? "11px" : "10px",
-                filter: theme === "brattify" ? "blur(0.6px)" : undefined,
+                filter: isBrat ? `blur(${bratBlur * 0.75}px)` : undefined,
               }}
             >
               {song.artistName}
