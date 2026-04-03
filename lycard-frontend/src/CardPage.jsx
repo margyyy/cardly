@@ -143,6 +143,7 @@ export default function CardPage() {
   const [theme, setTheme] = useState("cardly");
   const [showQuote, setShowQuote] = useState(true);
   const [showInstaBanner, setShowInstaBanner] = useState(true);
+  const [savedImageUrl, setSavedImageUrl] = useState(null);
   const isInstagram = /Instagram/.test(navigator.userAgent);
   const prevTransform = useRef(null);
 
@@ -267,22 +268,23 @@ export default function CardPage() {
       const file = new File([blob], fileName, { type: "image/png" });
       const blobUrl = URL.createObjectURL(blob);
 
-      // Load image in new tab — user can long-press to save on mobile
-      if (newTab) {
+      if (isInstagram) {
+        // Instagram blocks window.open — show image inline for long-press save
+        if (newTab) newTab.close();
+        setSavedImageUrl(blobUrl);
+      } else if (newTab) {
         newTab.location.href = blobUrl;
-      }
-
-      // Also try native share or <a download> fallback
-      if (navigator.canShare?.({ files: [file] })) {
-        await navigator.share({ files: [file] });
-      } else if (!newTab) {
+        if (navigator.canShare?.({ files: [file] })) {
+          await navigator.share({ files: [file] });
+        }
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
+      } else {
         const link = document.createElement("a");
         link.href = blobUrl;
         link.download = fileName;
         link.click();
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
       }
-
-      setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
     } catch (err) {
       if (newTab) newTab.close();
       alert("Errore: " + err.message);
@@ -298,6 +300,7 @@ export default function CardPage() {
   const bratBlur = 0.8 / EXPORT_SCALE;
 
   return (
+    <>
     <div className="w-full max-w-4xl px-6 py-10 flex flex-col gap-6">
       <Button
         variant="default"
@@ -724,5 +727,29 @@ export default function CardPage() {
         )}
       </div>
     </div>
+
+    {savedImageUrl && (
+        <div
+          className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-black/90 px-6"
+          onClick={() => setSavedImageUrl(null)}
+        >
+          <p className="text-white text-sm font-head uppercase tracking-widest text-center">
+            {t.instaOverlayHint}
+          </p>
+          <img
+            src={savedImageUrl}
+            alt="card"
+            className="max-w-full max-h-[70vh] object-contain"
+            onClick={(e) => e.stopPropagation()}
+          />
+          <button
+            className="text-white/60 font-head text-xs uppercase tracking-widest border border-white/30 px-4 py-2"
+            onClick={() => setSavedImageUrl(null)}
+          >
+            {t.instaOverlayClose}
+          </button>
+        </div>
+      )}
+    </>
   );
 }
