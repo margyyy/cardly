@@ -140,7 +140,6 @@ export default function CardPage() {
   const [cardStyle, setCardStyle] = useState("portrait"); // "portrait" | "square"
   const [spacedText, setSpacedText] = useState(null);
   const [theme, setTheme] = useState("cardly");
-  const [showQuote, setShowQuote] = useState(true);
   const prevTransform = useRef(null);
 
   const dragging = useRef(false);
@@ -319,19 +318,17 @@ export default function CardPage() {
           />
 
           {/* quote mark top-left */}
-          {showQuote && (
-            <span
-              className="absolute top-5 left-6 text-white/30 select-none pointer-events-none"
-              style={{
-                fontFamily: "'Catamaran', sans-serif",
-                fontWeight: 900,
-                fontSize: isPortrait ? "80px" : "64px",
-                lineHeight: 1,
-              }}
-            >
-              "
-            </span>
-          )}
+          <span
+            className="absolute top-5 left-6 text-white/30 select-none pointer-events-none"
+            style={{
+              fontFamily: "'Catamaran', sans-serif",
+              fontWeight: 900,
+              fontSize: isPortrait ? "80px" : "64px",
+              lineHeight: 1,
+            }}
+          >
+            "
+          </span>
 
           {/* lyrics — centered in safe zone (below quote, above bottom bar) */}
           <div
@@ -481,32 +478,24 @@ export default function CardPage() {
               </button>
               {openPanel === "theme" && (
                 <div className="flex gap-2 px-4 pb-4 pt-1">
-                  {["cardly", "brattify"].map((th) => {
-                    const isActive = theme === th;
-                    const isBratBtn = th === "brattify";
-                    return (
-                      <button
-                        key={th}
-                        onClick={() => setTheme(th)}
-                        style={{
-                          fontFamily: THEME_FONT[th],
-                          filter: isBratBtn && !isActive ? "blur(0.5px)" : undefined,
-                          backgroundColor: isBratBtn && isActive ? "#8ACF00" : undefined,
-                          borderColor: isBratBtn && isActive ? "#8ACF00" : undefined,
-                          color: isBratBtn && isActive ? "#000000" : undefined,
-                        }}
-                        className={`flex-1 py-1.5 border-2 border-border text-sm transition-all ${
-                          isActive && !isBratBtn
-                            ? "bg-foreground text-background shadow-none translate-y-0.5"
-                            : !isActive
-                            ? "bg-card text-foreground shadow-sm hover:shadow-none hover:translate-y-0.5"
-                            : "shadow-none translate-y-0.5"
-                        }`}
-                      >
-                        {th}
-                      </button>
-                    );
-                  })}
+                  <button
+                    onClick={() => setTheme("cardly")}
+                    style={{ fontFamily: THEME_FONT["cardly"] }}
+                    className={`flex-1 py-1.5 border-2 border-border text-sm transition-all ${
+                      theme === "cardly"
+                        ? "bg-foreground text-background shadow-none translate-y-0.5"
+                        : "bg-card text-foreground shadow-sm hover:shadow-none hover:translate-y-0.5"
+                    }`}
+                  >
+                    cardly
+                  </button>
+                  <button
+                    disabled
+                    style={{ fontFamily: THEME_FONT["brattify"] }}
+                    className="flex-1 py-1.5 border-2 border-border text-sm bg-card text-foreground/30 cursor-not-allowed select-none"
+                  >
+                    brattify — {t.comingSoon}
+                  </button>
                 </div>
               )}
             </div>
@@ -566,16 +555,6 @@ export default function CardPage() {
                       {t.cancel}
                     </button>
                   )}
-                  <button
-                    className={`w-full py-1.5 border-2 border-border font-head text-xs uppercase tracking-widest transition-all ${
-                      !showQuote
-                        ? "bg-foreground text-background shadow-none translate-y-0.5"
-                        : "bg-card text-foreground shadow-sm hover:shadow-none hover:translate-y-0.5"
-                    }`}
-                    onClick={() => setShowQuote((q) => !q)}
-                  >
-                    {t.removeWatermark}
-                  </button>
                 </div>
               )}
             </div>
