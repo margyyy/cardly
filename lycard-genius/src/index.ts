@@ -17,8 +17,17 @@ db.run(`
     ts      TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
   )
 `);
-const STATS_PW = "cardly2024";
-const DASH_PW = "@r15799886R";
+
+const STATS_PW = process.env.STATS_PW;
+const DASH_PW  = process.env.DASH_PW;
+const FRONTEND_URL = process.env.FRONTEND_URL ?? "http://localhost:5173";
+
+if (!STATS_PW || !DASH_PW) {
+  throw new Error("STATS_PW and DASH_PW must be set in environment variables");
+}
+
+// Session token generated fresh on each server start (in-memory only)
+const SESSION_TOKEN = crypto.randomUUID();
 
 function escHtml(s: string): string {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -56,7 +65,6 @@ async function scrapeLyrics(
   const cleanPath = path.startsWith("http") ? new URL(path).pathname : path;
 
   try {
-    // Usiamo il FETCH nativo di Bun con header da browser reale
     const response = await fetch(`https://genius.com${cleanPath}`, {
       headers: {
         "User-Agent":
@@ -105,8 +113,21 @@ async function scrapeLyrics(
   }
 }
 
+// ── Helpers ───────────────────────────────────────────────────────
+function isAuthenticated(cookies: Record<string, { value: string } | string | undefined>): boolean {
+  const raw = cookies["dash_session"];
+  const value = typeof raw === "object" && raw !== null ? raw.value : raw;
+  return value === SESSION_TOKEN;
+}
+
+function setCookieHeader() {
+  return `dash_session=${SESSION_TOKEN}; HttpOnly; Path=/; SameSite=Strict`;
+}
+
 new Elysia()
-  .use(cors())
+  .use(cors({ origin: FRONTEND_URL }))
+
+  // ── Public: search & lyrics ──────────────────────────────────────
   .get("/search", async ({ query }) => {
     const type = (query.type as string) ?? "song";
     const data = await apiGet("/search", { q: query.q as string });
@@ -139,6 +160,7 @@ new Elysia()
     }));
     return { type: "songs", results };
   })
+
   .get("/artists/:id/songs", async ({ params, query }) => {
     const page = (query.page as string) ?? "1";
     const sort = (query.sort as string) ?? "title";
@@ -153,6 +175,7 @@ new Elysia()
     const nextPage = data.response.next_page ?? null;
     return { songs, nextPage };
   })
+
   .get("/songs/:id", async ({ params }) => {
     const data = await apiGet(`/songs/${params.id}`);
     const s = data.response.song;
@@ -164,24 +187,34 @@ new Elysia()
       image: s.song_art_image_url ?? null,
     };
   })
+
   .get(
     "/songs/:id/lyrics",
     async ({ params, query }) =>
       await scrapeLyrics(Number(params.id), query.path),
   )
-  .post("/track", ({ body }: { body: any }) => {
-    const { song, artist, lines, format } = body as {
-      song: string;
-      artist: string;
-      lines: number;
-      format: string;
-    };
-    db.run(
-      "INSERT INTO events (song, artist, lines, format) VALUES (?, ?, ?, ?)",
-      [song, artist, lines, format],
-    );
-    return { ok: true };
-  })
+
+  // ── Public: analytics tracking ───────────────────────────────────
+  .post(
+    "/track",
+    ({ body }) => {
+      db.run(
+        "INSERT INTO events (song, artist, lines, format) VALUES (?, ?, ?, ?)",
+        [body.song, body.artist, body.lines, body.format],
+      );
+      return { ok: true };
+    },
+    {
+      body: t.Object({
+        song:   t.String({ maxLength: 500 }),
+        artist: t.String({ maxLength: 500 }),
+        lines:  t.Number({ minimum: 0, maximum: 100 }),
+        format: t.String({ maxLength: 50 }),
+      }),
+    },
+  )
+
+  // ── Protected: stats JSON ────────────────────────────────────────
   .get("/stats", ({ query }: { query: any }) => {
     if (query.pw !== STATS_PW) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
@@ -224,8 +257,13 @@ new Elysia()
 
     return { totalDownloads, topSongs, topArtists, byFormat, perDay };
   })
-  .get("/dashboard", ({ query }: { query: any }) => {
-    if (query.pw !== DASH_PW) {
+
+  // ── Protected: dashboard HTML ────────────────────────────────────
+  .get("/dashboard", ({ query, cookie }: { query: any; cookie: any }) => {
+    const authedViaCookie = isAuthenticated(cookie);
+    const authedViaPw = query.pw === DASH_PW;
+
+    if (!authedViaCookie && !authedViaPw) {
       const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Dashboard</title>
 <style>body{font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;background:#f5f5f5}
 form{background:#fff;padding:2rem;border:2px solid #000;box-shadow:4px 4px 0 #000}
@@ -238,6 +276,17 @@ button{margin-top:1rem;padding:.5rem 1.5rem;background:#000;color:#fff;border:no
   <br><button type="submit">Accedi</button>
 </form></body></html>`;
       return new Response(html, { headers: { "Content-Type": "text/html" } });
+    }
+
+    // Set session cookie and redirect to clean URL (removes ?pw= from address bar)
+    if (authedViaPw && !authedViaCookie) {
+      return new Response(null, {
+        status: 302,
+        headers: {
+          Location: "/dashboard",
+          "Set-Cookie": setCookieHeader(),
+        },
+      });
     }
 
     const total = (db.query("SELECT COUNT(*) as c FROM events").get() as any).c;
@@ -276,7 +325,7 @@ th{background:#000;color:#fff;font-weight:600}tr:hover{background:#fafafa}
 <p class="sub">Total downloads: <strong>${total}</strong> — Top 100 tracks by downloads</p>
 <div class="topbar">
   <span style="font-size:.875rem;color:#555">${rows.length} tracks shown</span>
-  <a class="btn" href="/dashboard/csv?pw=${encodeURIComponent(DASH_PW)}">Download CSV (all)</a>
+  <a class="btn" href="/dashboard/csv">Download CSV (all)</a>
 </div>
 <table>
   <thead><tr><th>#</th><th>Song</th><th>Artist</th><th>Downloads</th><th>Formats</th></tr></thead>
@@ -286,14 +335,43 @@ th{background:#000;color:#fff;font-weight:600}tr:hover{background:#fafafa}
 
     return new Response(html, { headers: { "Content-Type": "text/html" } });
   })
-  .get("/events", ({ query }: { query: any }) => {
-    if (query.pw !== DASH_PW) {
+
+  // ── Protected: CSV export ────────────────────────────────────────
+  .get("/dashboard/csv", ({ cookie }: { cookie: any }) => {
+    if (!isAuthenticated(cookie)) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
+    }
+    const rows = db.query(
+      `SELECT song, artist, lines, format, ts FROM events ORDER BY ts DESC`
+    ).all() as any[];
+
+    const csv = [
+      "song,artist,lines,format,ts",
+      ...rows.map((r) =>
+        [r.song, r.artist, r.lines, r.format, r.ts]
+          .map((v) => `"${String(v ?? "").replace(/"/g, '""')}"`)
+          .join(",")
+      ),
+    ].join("\n");
+
+    return new Response(csv, {
+      headers: {
+        "Content-Type": "text/csv",
+        "Content-Disposition": 'attachment; filename="events.csv"',
+      },
+    });
+  })
+
+  // ── Protected: raw events JSON ───────────────────────────────────
+  .get("/events", ({ cookie }: { cookie: any }) => {
+    if (!isAuthenticated(cookie)) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
     }
     return db.query(
-      `SELECT song, artist, lines, format, ts FROM events ORDER BY ts DESC`
+      `SELECT song, artist, lines, format, ts FROM events ORDER BY ts DESC LIMIT 1000`
     ).all();
   })
+
   .listen(3000);
 
-console.log("🦊 Server Arch (Bun Native Fetch) pronto su porta 3000");
+console.log("🦊 Server pronto su porta 3000");
