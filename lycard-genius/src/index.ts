@@ -20,7 +20,6 @@ db.run(`
 
 const STATS_PW = process.env.STATS_PW;
 const DASH_PW  = process.env.DASH_PW;
-const FRONTEND_URL = process.env.FRONTEND_URL ?? "http://localhost:5173";
 
 if (!STATS_PW || !DASH_PW) {
   throw new Error("STATS_PW and DASH_PW must be set in environment variables");
@@ -125,13 +124,7 @@ function setCookieHeader() {
 }
 
 new Elysia()
-  .use(cors({
-    origin: (request) => {
-      const origin = request.headers.get("origin") ?? "";
-      const allowed = FRONTEND_URL.split(",").map((s) => s.trim());
-      return allowed.some((o) => origin === o || origin.endsWith(".vercel.app"));
-    },
-  }))
+  .use(cors({ origin: true }))
 
   // ── Public: search & lyrics ──────────────────────────────────────
   .get("/search", async ({ query }) => {
