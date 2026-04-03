@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Cardly — Post 1</title>
+<style>
+  @font-face {
+    font-family: 'Archivo Black';
+    src: url('../lycard-frontend/public/fonts/ArchivoBlack-latin.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #888;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    font-family: 'Archivo Black', sans-serif;
+  }
+
+  /* 4:5 = 1080x1350 — scaled down to 864x1080 for screen */
+  .canvas {
+    background: #ffffff;
+    width: 864px;
+    height: 1080px;
+    
+    
+    
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .card {
+    background: #fff;
+    border: 2px solid #000;
+    box-shadow: 4px 4px 0 0 #000;
+    width: 520px;
+    padding: 0;
+  }
+
+  .card-header {
+    padding: 28px 32px 20px;
+    border-bottom: 2px solid #000;
+  }
+
+  .card-title {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 38px;
+    letter-spacing: -0.5px;
+    color: #000;
+    line-height: 1;
+  }
+
+  .card-tagline {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 13px;
+    color: rgba(0,0,0,0.4);
+    margin-top: 8px;
+    font-weight: 400;
+  }
+
+  .card-content {
+    padding: 24px 32px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .search-input {
+    width: 100%;
+    border: 2px solid #000;
+    padding: 10px 14px;
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 15px;
+    color: #000;
+    background: #fff;
+    outline: none;
+  }
+
+  .row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .toggle-btn {
+    flex: 1;
+    padding: 8px 0;
+    border: 2px solid #000;
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    cursor: pointer;
+    transition: all 0.1s;
+  }
+
+  .toggle-btn.active {
+    background: #000;
+    color: #fff;
+    transform: translateY(2px);
+    box-shadow: none;
+  }
+
+  .toggle-btn.inactive {
+    background: #fff;
+    color: #000;
+    box-shadow: 2px 2px 0 0 #000;
+  }
+
+  .lang-group {
+    display: flex;
+    margin-left: auto;
+  }
+
+  .lang-btn {
+    padding: 8px 12px;
+    border: 2px solid #000;
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    background: #fff;
+    color: #000;
+    box-shadow: 2px 2px 0 0 #000;
+  }
+
+  .lang-btn:first-child {
+    border-right: none;
+  }
+
+  .lang-btn.active {
+    background: #000;
+    color: #fff;
+    transform: translateY(2px);
+    box-shadow: none;
+  }
+
+  .search-btn {
+    padding: 10px 24px;
+    border: 2px solid #000;
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    background: #c4a1ff;
+    color: #000;
+    box-shadow: 3px 3px 0 0 #000;
+    align-self: flex-start;
+  }
+</style>
+</head>
+<body>
+  <div class="canvas">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Cardly</div>
+        <div class="card-tagline">Turn your favorite lyrics into shareable cards</div>
+      </div>
+      <div class="card-content">
+        <input class="search-input" type="text" value="Travis Scott" readonly />
+        <div class="row">
+          <button class="toggle-btn active">Songs</button>
+          <button class="toggle-btn inactive">Artists</button>
+          <div class="lang-group">
+            <button class="lang-btn active">ENG</button>
+            <button class="lang-btn">IT</button>
+          </div>
+        </div>
+        <button class="search-btn">Search</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

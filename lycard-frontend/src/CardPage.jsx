@@ -217,8 +217,11 @@ export default function CardPage() {
   const activeBg = isResizing || confirmedTransform;
 
   async function handleDownload() {
-    // Open new tab immediately (before await) to keep user-gesture context
-    const newTab = window.open("", "_blank");
+    const isMobile = "ontouchstart" in window || navigator.maxTouchPoints > 0;
+
+    // On desktop: open new tab before await to preserve user-gesture for window.open.
+    // On mobile: skip it — we'll use navigator.share or <a download> directly.
+    const newTab = !isMobile && !isInstagram ? window.open("", "_blank") : null;
 
     // fire-and-forget analytics
     try {
@@ -269,20 +272,24 @@ export default function CardPage() {
       const blobUrl = URL.createObjectURL(blob);
 
       if (isInstagram) {
-        // Instagram blocks window.open — show image inline for long-press save
-        if (newTab) newTab.close();
+        // Instagram blocks everything — show image inline for long-press save
         setSavedImageUrl(blobUrl);
+      } else if (isMobile && navigator.canShare?.({ files: [file] })) {
+        // Android Chrome + iOS Safari: native share sheet with the PNG file
+        await navigator.share({ files: [file] });
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
       } else if (newTab) {
+        // Desktop: open image in new tab
         newTab.location.href = blobUrl;
-        if (navigator.canShare?.({ files: [file] })) {
-          await navigator.share({ files: [file] });
-        }
         setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
       } else {
+        // Fallback: direct <a download> click
         const link = document.createElement("a");
         link.href = blobUrl;
         link.download = fileName;
+        document.body.appendChild(link);
         link.click();
+        document.body.removeChild(link);
         setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
       }
     } catch (err) {

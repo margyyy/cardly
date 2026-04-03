@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Cardly — Launch Video EN</title>
+<style>
+  @font-face {
+    font-family: 'Archivo Black';
+    src: url('../lycard-frontend/public/fonts/ArchivoBlack-latin.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+  }
+  @import url('https://fonts.googleapis.com/css2?family=Catamaran:wght@900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    width: 1080px;
+    height: 1920px;
+    background-color: #fffbf2;
+    background-image: radial-gradient(circle, rgba(0,0,0,0.1) 1px, transparent 1px);
+    background-size: 22px 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .canvas {
+    width: 1080px;
+    height: 1920px;
+    background: transparent;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 40px;
+    position: relative;
+  }
+
+  .logo-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0;
+    animation: fadeUp 0.7s ease forwards;
+    opacity: 0;
+  }
+
+  .logo-text {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 140px;
+    letter-spacing: -2px;
+    color: #000;
+    line-height: 1;
+  }
+
+  .logo-quote {
+    font-family: 'Catamaran', sans-serif;
+    font-weight: 900;
+    font-size: 140px;
+    color: #000;
+    line-height: 0.85;
+    margin-left: 8px;
+  }
+
+  .out-now {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 32px;
+    text-transform: uppercase;
+    letter-spacing: 0.25em;
+    color: rgba(0,0,0,0.35);
+    animation: fadeUp 0.7s 0.2s ease forwards;
+    opacity: 0;
+  }
+
+  .tagline {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 28px;
+    color: rgba(0,0,0,0.5);
+    text-align: center;
+    line-height: 1.5;
+    max-width: 760px;
+    animation: fadeUp 0.7s 0.35s ease forwards;
+    opacity: 0;
+  }
+
+  .generate-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    padding: 28px 64px;
+    border: 3px solid #000;
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 32px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    background: #c4a1ff;
+    color: #000;
+    box-shadow: 6px 6px 0 0 #000;
+    cursor: pointer;
+    animation: fadeUp 0.7s 0.5s ease forwards, clickBtn 2.5s 1.6s ease infinite;
+    opacity: 0;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes clickBtn {
+    0%,  55%, 100% { transform: translateY(0)   translateX(0);   box-shadow: 6px 6px 0 0 #000; }
+    60%, 75%        { transform: translateY(5px) translateX(4px); box-shadow: 1px 1px 0 0 #000; }
+  }
+</style>
+</head>
+<body>
+  <div class="canvas">
+    <div class="logo-row">
+      <span class="logo-text">Cardly</span>
+      <span class="logo-quote">&#x201C;</span>
+    </div>
+    <div class="out-now">out now</div>
+    <div class="tagline">Turn your favorite lyrics<br>into shareable cards.</div>
+    <button class="generate-btn">Generate →</button>
+  </div>
+</body>
+</html>
