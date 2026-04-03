@@ -32,7 +32,7 @@ function ManualForm() {
     if (!text.trim()) return;
     const lines = text.split("\n");
     const song = { trackName: trackName.trim() || null, artistName: artistName.trim() || null, albumName: null };
-    navigate("/card", { state: { song, lines } });
+    navigate("/card", { state: { song, lines, isManual: true } });
   }
 
   return (

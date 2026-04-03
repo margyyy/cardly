@@ -126,6 +126,7 @@ export default function CardPage() {
   const queryData = parseQueryData(search);
   const song = state?.song || queryData?.song;
   const lines = state?.lines ?? queryData?.lines ?? [];
+  const isManual = state?.isManual ?? false;
 
   const [bgUrl, setBgUrl] = useState(null);
   const [bgColor, setBgColor] = useState(null);
@@ -140,6 +141,7 @@ export default function CardPage() {
   const [cardStyle, setCardStyle] = useState("portrait"); // "portrait" | "square"
   const [spacedText, setSpacedText] = useState(null);
   const [theme, setTheme] = useState("cardly");
+  const [showQuote, setShowQuote] = useState(true);
   const prevTransform = useRef(null);
 
   const dragging = useRef(false);
@@ -318,17 +320,19 @@ export default function CardPage() {
           />
 
           {/* quote mark top-left */}
-          <span
-            className="absolute top-5 left-6 text-white/30 select-none pointer-events-none"
-            style={{
-              fontFamily: "'Catamaran', sans-serif",
-              fontWeight: 900,
-              fontSize: isPortrait ? "80px" : "64px",
-              lineHeight: 1,
-            }}
-          >
-            "
-          </span>
+          {showQuote && (
+            <span
+              className="absolute top-5 left-6 text-white/30 select-none pointer-events-none"
+              style={{
+                fontFamily: "'Catamaran', sans-serif",
+                fontWeight: 900,
+                fontSize: isPortrait ? "80px" : "64px",
+                lineHeight: 1,
+              }}
+            >
+              "
+            </span>
+          )}
 
           {/* lyrics — centered in safe zone (below quote, above bottom bar) */}
           <div
@@ -553,6 +557,18 @@ export default function CardPage() {
                       onClick={() => setBgColor(null)}
                     >
                       {t.cancel}
+                    </button>
+                  )}
+                  {isManual && (
+                    <button
+                      className={`w-full py-1.5 border-2 border-border font-head text-xs uppercase tracking-widest transition-all ${
+                        !showQuote
+                          ? "bg-foreground text-background shadow-none translate-y-0.5"
+                          : "bg-card text-foreground shadow-sm hover:shadow-none hover:translate-y-0.5"
+                      }`}
+                      onClick={() => setShowQuote((q) => !q)}
+                    >
+                      {t.removeWatermark}
                     </button>
                   )}
                 </div>
