@@ -219,9 +219,9 @@ export default function CardPage() {
   async function handleDownload() {
     const isMobile = "ontouchstart" in window || navigator.maxTouchPoints > 0;
 
-    // On desktop: open new tab before await to preserve user-gesture for window.open.
-    // On mobile: skip it — we'll use navigator.share or <a download> directly.
-    const newTab = !isMobile && !isInstagram ? window.open("", "_blank") : null;
+    // Open new tab before await to preserve user-gesture context (works on all browsers).
+    // On Instagram window.open is blocked, so skip it.
+    const newTab = !isInstagram ? window.open("", "_blank") : null;
 
     // fire-and-forget analytics
     try {
@@ -268,22 +268,27 @@ export default function CardPage() {
 
       const fileName = `${song.trackName} — ${song.artistName}.png`;
       const blob = await fetch(dataUrl).then((r) => r.blob());
-      const file = new File([blob], fileName, { type: "image/png" });
       const blobUrl = URL.createObjectURL(blob);
 
       if (isInstagram) {
-        // Instagram blocks everything — show image inline for long-press save
+        // Instagram blocks window.open — show image inline for long-press save
         setSavedImageUrl(blobUrl);
-      } else if (isMobile && navigator.canShare?.({ files: [file] })) {
-        // Android Chrome + iOS Safari: native share sheet with the PNG file
-        await navigator.share({ files: [file] });
-        setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
       } else if (newTab) {
-        // Desktop: open image in new tab
-        newTab.location.href = blobUrl;
+        if (isMobile) {
+          // On mobile: load an HTML wrapper with the image so user can long-press to save
+          const html =
+            `<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1">` +
+            `<style>*{margin:0;padding:0}body{background:#000;display:flex;align-items:center;justify-content:center;min-height:100dvh}` +
+            `img{max-width:100%;max-height:100dvh;object-fit:contain}</style></head>` +
+            `<body><img src="${blobUrl}"></body></html>`;
+          const htmlBlob = new Blob([html], { type: "text/html" });
+          newTab.location.href = URL.createObjectURL(htmlBlob);
+        } else {
+          newTab.location.href = blobUrl;
+        }
         setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
       } else {
-        // Fallback: direct <a download> click
+        // Fallback
         const link = document.createElement("a");
         link.href = blobUrl;
         link.download = fileName;
