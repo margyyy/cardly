@@ -29,13 +29,18 @@ function parseQueryData(search) {
 }
 
 // ── Shared: lyrics lines renderer ────────────────────────────────
-function LyricLines({ lines, fontSize, textColor, lineBar, lineBarOpacity, spacedText }) {
+const FONTS = {
+  "archivo-black": "'Archivo Black', sans-serif",
+  "arial-narrow":  "'Arial Narrow', 'Arial', sans-serif",
+};
+
+function LyricLines({ lines, fontSize, textColor, lineBar, lineBarOpacity, spacedText, font }) {
   return lines.map((line, i) => (
     <p
       key={i}
       className="text-left leading-snug"
       style={{
-        fontFamily: "'Archivo Black', sans-serif",
+        fontFamily: FONTS[font] ?? FONTS["archivo-black"],
         fontSize: `${fontSize}px`,
         color: textColor === "white" ? "#ffffff" : "#000000",
         width: "100%",
@@ -129,6 +134,7 @@ export default function CardPage() {
   const [confirmedTransform, setConfirmedTransform] = useState(null);
   const [cardStyle, setCardStyle] = useState("portrait"); // "portrait" | "square"
   const [spacedText, setSpacedText] = useState(null);
+  const [font, setFont] = useState("archivo-black");
   const prevTransform = useRef(null);
 
   const dragging = useRef(false);
@@ -328,6 +334,7 @@ export default function CardPage() {
               lineBar={lineBar}
               lineBarOpacity={lineBarOpacity}
               spacedText={spacedText}
+              font={font}
             />
           </div>
 
@@ -515,6 +522,28 @@ export default function CardPage() {
               </button>
               {openPanel === "text" && (
                 <div className="flex flex-col gap-3 px-4 pb-4 pt-1">
+                  <div className="flex flex-col gap-1.5">
+                    <span className="font-head text-xs uppercase tracking-widest">{t.font}</span>
+                    <div className="flex gap-2">
+                      {[
+                        { key: "archivo-black", label: "Archivo Black" },
+                        { key: "arial-narrow",  label: "Arial Narrow" },
+                      ].map(({ key, label }) => (
+                        <button
+                          key={key}
+                          onClick={() => setFont(key)}
+                          style={{ fontFamily: FONTS[key] }}
+                          className={`flex-1 py-1.5 border-2 border-border text-xs transition-all ${
+                            font === key
+                              ? "bg-foreground text-background shadow-none translate-y-0.5"
+                              : "bg-card text-foreground shadow-sm hover:shadow-none hover:translate-y-0.5"
+                          }`}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                   <div className="flex flex-col gap-1">
                     <label className="font-head text-xs uppercase tracking-widest">
                       {t.fontSize} — {fontSize}px
