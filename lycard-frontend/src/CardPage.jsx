@@ -22,7 +22,7 @@ function parseQueryData(search) {
     const q = new URLSearchParams(search);
     const d = q.get("d");
     if (d) {
-      return JSON.parse(decodeURIComponent(escape(atob(d))));
+      return JSON.parse(decodeURIComponent(atob(d).split("").map((c) => "%" + c.charCodeAt(0).toString(16).padStart(2, "0")).join("")));
     }
   } catch (e) {}
   return null;
@@ -39,10 +39,13 @@ function LyricLines({ lines, fontSize, textColor, lineBar, lineBarOpacity, space
   return lines.map((line, i) => (
     <p
       key={i}
-      className="text-left leading-snug"
+      className="leading-snug"
       style={{
         fontFamily: THEME_FONT[theme] ?? THEME_FONT.cardly,
-        filter: isBrat ? "blur(0.8px)" : undefined,
+        fontWeight: isBrat ? 500 : undefined,
+        filter: isBrat ? "blur(2px)" : undefined,
+        textAlign: isBrat ? "justify" : "left",
+        textAlignLast: isBrat ? "justify" : undefined,
         fontSize: `${fontSize}px`,
         color: textColor === "white" ? "#ffffff" : "#000000",
         width: "100%",
